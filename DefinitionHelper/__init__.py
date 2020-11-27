@@ -250,7 +250,11 @@ class Def_Updater(object):
                     which_tab.addWidget(self.tab_res_button)
                     self.tab_res_button.clicked.connect(lambda ch, element=element: self.update_note(note, element))
         else:
-            showInfo("No Results found!")
+            # showInfo("No Results found!")
+            self.tab_res_label = QtWidgets.QLabel(which_scroll)
+            self.tab_res_label.setObjectName("label")
+            self.tab_res_label.setText(f"No Results found!")
+            which_tab.addWidget(self.tab_res_label)
 
     def plot_results_gui(self, results_list, note, which_scroll, which_tab):
         self.clearLayout(which_tab)
@@ -270,7 +274,11 @@ class Def_Updater(object):
                     which_tab.addWidget(self.tab_res_button)
                     self.tab_res_button.clicked.connect(lambda ch, element=element: self.update_note_gui(note, element))
         else:
-            showInfo("No Results found!")
+            # showInfo("No Results found!")
+            self.tab_res_label = QtWidgets.QLabel(which_scroll)
+            self.tab_res_label.setObjectName("label")
+            self.tab_res_label.setText(f"No Results found!")
+            which_tab.addWidget(self.tab_res_label)
 
     def update_note(self, note_id, content):
         if self.curr_disp_overwrite.isChecked():
