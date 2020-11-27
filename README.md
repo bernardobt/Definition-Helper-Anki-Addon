@@ -21,7 +21,7 @@ In Results, you see three tabs in which the results for each dictionary will be 
 
 NOTE: The Dictionary files ARE NOT provided, you'll have to set them manually and currently it DOES NOT WORK with Jmdict_English. It was designed with Japanese dictionaries in mind. The files are the same are Yomichan uses.
 
-To set up the dictionaries, you'll need to provide the path for the folder in which the dictionaries will be on in the variable "dict_folder_path" (ex. dict_folder_path = "D:\\Japanese\\Dictionaries\\" )
+To set up the dictionaries, you'll need to provide the path for the folder in which the dictionaries will be on in the variable "dict_folder_path" (ex. dict_folder_path = "D:\\Japanese\\Dictionaries\\"  *with two slashes* )
 
 Inside that folder you'll need to create a new folder for each dictionary and put all the json files in there. 
 
