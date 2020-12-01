@@ -3,6 +3,7 @@ from aqt import mw
 from aqt.utils import showInfo
 from aqt.qt import *
 import json
+import re
 from textwrap import wrap
 from PyQt5 import QtCore, QtWidgets
 from aqt.main import ResetReason
@@ -29,6 +30,8 @@ class Def_Updater(object):
         AddonWindow.setObjectName("Definition Updater")
         AddonWindow.resize(366, 680)
         AddonWindow.setMinimumSize(366, 680)
+
+        #Fetch options
         self.dictionaries_list = self.load_multi_dict(self.dict_path)
         self.centralwidget = QtWidgets.QWidget(AddonWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -54,6 +57,8 @@ class Def_Updater(object):
         self.fb_btn_run = QtWidgets.QPushButton(self.horizontalLayoutWidget)
         self.fb_btn_run.setObjectName("fb_btn_run")
         self.fetch_box_h_layout.addWidget(self.fb_btn_run)
+
+        # Get current
         self.current_display_box = QtWidgets.QGroupBox(self.centralwidget)
         self.current_display_box.setGeometry(QtCore.QRect(10, 80, 350, 60))
         self.current_display_box.setObjectName("current_display_box")
@@ -76,20 +81,46 @@ class Def_Updater(object):
         self.curr_dis_button = QtWidgets.QPushButton(self.horizontalLayoutWidget_2)
         self.curr_dis_button.setObjectName("curr_dis_button")
         self.current_box_h_layout.addWidget(self.curr_dis_button)
+
+        #regex stuff
+        self.regex_options_box = QtWidgets.QGroupBox(self.centralwidget)
+        self.regex_options_box.setGeometry(QtCore.QRect(10, 150, 350, 60))
+        self.regex_options_box.setObjectName("regex_options_box")
+        self.horizontalLayoutWidget_3 = QtWidgets.QWidget(self.regex_options_box)
+        self.horizontalLayoutWidget_3.setGeometry(QtCore.QRect(10, 20, 330, 30))
+        self.horizontalLayoutWidget_3.setObjectName("horizontalLayoutWidget_3")
+        self.regex_box_h_layout = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget_3)
+        self.regex_box_h_layout.setContentsMargins(0, 0, 0, 0)
+        self.regex_box_h_layout.setObjectName("regex_box_h_layout")
+        self.regex_apply_rbtn = QtWidgets.QRadioButton(self.horizontalLayoutWidget_3)
+        self.regex_apply_rbtn.setChecked(True)
+        self.regex_apply_rbtn.setObjectName("regex_apply_rbtn")
+        self.regex_box_h_layout.addWidget(self.regex_apply_rbtn)
+        self.regex_ignore_rbtn = QtWidgets.QRadioButton(self.horizontalLayoutWidget_3)
+        self.regex_ignore_rbtn.setObjectName("regex_ignore_rbtn")
+        self.regex_box_h_layout.addWidget(self.regex_ignore_rbtn)
+        self.regex_text = QtWidgets.QLineEdit(self.horizontalLayoutWidget_3)
+        self.regex_text.setObjectName("regex_text")
+        self.regex_box_h_layout.addWidget(self.regex_text)
+        self.regex_text_replace = QtWidgets.QLineEdit(self.horizontalLayoutWidget_3)
+        self.regex_text_replace.setObjectName("regex_text_replace")
+        self.regex_box_h_layout.addWidget(self.regex_text_replace)
+
+        #Results box
         self.results_box = QtWidgets.QGroupBox(self.centralwidget)
-        self.results_box.setGeometry(QtCore.QRect(10, 150, 350, 500))
+        self.results_box.setGeometry(QtCore.QRect(10, 220, 350, 430))
         self.results_box.setObjectName("results_box")
         self.dict_tabs = QtWidgets.QTabWidget(self.results_box)
-        self.dict_tabs.setGeometry(QtCore.QRect(10, 20, 330, 470))
+        self.dict_tabs.setGeometry(QtCore.QRect(10, 20, 330, 400))
         self.dict_tabs.setObjectName("dict_tabs")
         self.res_tab_1 = QtWidgets.QWidget()
         self.res_tab_1.setObjectName("res_tab_1")
         self.dict_1_tab_scroll_area = QtWidgets.QScrollArea(self.res_tab_1)
-        self.dict_1_tab_scroll_area.setGeometry(QtCore.QRect(5, 5, 315, 430))
+        self.dict_1_tab_scroll_area.setGeometry(QtCore.QRect(5, 5, 315, 360))
         self.dict_1_tab_scroll_area.setWidgetResizable(True)
         self.dict_1_tab_scroll_area.setObjectName("dict_1_tab_scroll_area")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(1, 1, 313, 438))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(1, 1, 313, 368))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout.setObjectName("verticalLayout")
@@ -98,11 +129,11 @@ class Def_Updater(object):
         self.res_tab_2 = QtWidgets.QWidget()
         self.res_tab_2.setObjectName("res_tab_2")
         self.dict_2_tab_scroll_area = QtWidgets.QScrollArea(self.res_tab_2)
-        self.dict_2_tab_scroll_area.setGeometry(QtCore.QRect(5, 5, 315, 430))
+        self.dict_2_tab_scroll_area.setGeometry(QtCore.QRect(5, 5, 315, 360))
         self.dict_2_tab_scroll_area.setWidgetResizable(True)
         self.dict_2_tab_scroll_area.setObjectName("dict_2_tab_scroll_area")
         self.scrollAreaWidgetContents_2 = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents_2.setGeometry(QtCore.QRect(1, 1, 313, 438))
+        self.scrollAreaWidgetContents_2.setGeometry(QtCore.QRect(1, 1, 313, 368))
         self.scrollAreaWidgetContents_2.setObjectName("scrollAreaWidgetContents_2")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents_2)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
@@ -111,11 +142,11 @@ class Def_Updater(object):
         self.res_tab_3 = QtWidgets.QWidget()
         self.res_tab_3.setObjectName("res_tab_3")
         self.dict_3_tab_scroll_area = QtWidgets.QScrollArea(self.res_tab_3)
-        self.dict_3_tab_scroll_area.setGeometry(QtCore.QRect(5, 5, 315, 430))
+        self.dict_3_tab_scroll_area.setGeometry(QtCore.QRect(5, 5, 315, 360))
         self.dict_3_tab_scroll_area.setWidgetResizable(True)
         self.dict_3_tab_scroll_area.setObjectName("dict_3_tab_scroll_area")
         self.scrollAreaWidgetContents_3 = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents_3.setGeometry(QtCore.QRect(1, 1, 313, 438))
+        self.scrollAreaWidgetContents_3.setGeometry(QtCore.QRect(1, 1, 313, 368))
         self.scrollAreaWidgetContents_3.setObjectName("scrollAreaWidgetContents_3")
         self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents_3)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
@@ -150,12 +181,16 @@ class Def_Updater(object):
         self.dict_tabs.setTabText(self.dict_tabs.indexOf(self.res_tab_1), _translate("AddonWindow", self.dict_1))
         self.dict_tabs.setTabText(self.dict_tabs.indexOf(self.res_tab_2), _translate("AddonWindow", self.dict_2))
         self.dict_tabs.setTabText(self.dict_tabs.indexOf(self.res_tab_3), _translate("AddonWindow", self.dict_3))
-
+        self.regex_options_box.setTitle(_translate("MainWindow", "Regex"))
+        self.regex_apply_rbtn.setText(_translate("MainWindow", "Apply"))
+        self.regex_ignore_rbtn.setText(_translate("MainWindow", "Ignore"))
+        self.regex_text.setText(_translate("MainWindow", "(?:(BEGIN:)|(\「)).*?(?(1):END)(?(2)\」)"))
+        self.regex_text_replace.setText(_translate("MainWindow", ""))
 
 
     def run_clicked(self, chk, qry_txt):
         if chk:
-            showInfo(f"Last added is selected\nQuery: '{qry_txt}'")
+            # showInfo(f"Last added is selected\nQuery: '{qry_txt}'")
             self.get_query_last(qry_txt, self.dictionaries_list)
         else:
             showInfo(f"Extra is selected\nQuery: '{qry_txt}'\n\nNo function yet :(")
@@ -177,17 +212,10 @@ class Def_Updater(object):
         scroll_area = [self.scrollAreaWidgetContents, self.scrollAreaWidgetContents_2, self.scrollAreaWidgetContents_3]
         ids = mw.col.find_notes(query_filter)
         note = mw.col.getNote(ids[-1])
-        showInfo(f"Search: {note[self.focus_field]}")
+        # showInfo(f"Search: {note[self.focus_field]}")
         for i, dict in enumerate(dict_list):
             result = self.query_dict(dict, note[self.focus_field])
             self.plot_results_gui(result, note, scroll_area[i], tab[i])
-
-    def get_query_recent(self, query_filter):
-        ids = mw.col.find_notes(query_filter)
-        note = mw.col.getNote(ids[1])
-        result = self.query_dict(self.term_bank_file_list, note[self.focus_field])
-        showInfo(f"Search: {note[self.focus_field]}")
-        self.plot_results(result, note, self.verticalLayout)
 
     def get_query_loop(self, query_filter):
         ids = mw.col.find_notes(query_filter)
@@ -195,7 +223,7 @@ class Def_Updater(object):
         for id in ids:
             note = mw.col.getNote(id)
             result = self.query_dict(self.term_bank_file_list, note[self.focus_field])
-            showInfo(f"Search: {note[self.focus_field]}")
+            # showInfo(f"Search: {note[self.focus_field]}")
             self.plot_results(result, note, self.verticalLayout)
 
     def get_file_list(self, path):
@@ -282,19 +310,39 @@ class Def_Updater(object):
 
     def update_note(self, note_id, content):
         if self.curr_disp_overwrite.isChecked():
-            note_id[self.target_jp_field] = content
-            note_id.flush()
+            if self.regex_apply_rbtn.isChecked():
+                regex_content = re.sub(f"{self.regex_text.text()}", f"{self.regex_text_replace}", content)
+                note_id[self.target_jp_field] = regex_content
+                note_id.flush()
+            else:
+                note_id[self.target_jp_field] = content
+                note_id.flush()
         else:
-            note_id[self.target_jp_field] += f"\n{content}"
-            note_id.flush()
+            if self.regex_apply_rbtn.isChecked():
+                regex_content = re.sub(f"{self.regex_text.text()}", f"{self.regex_text_replace}", content)
+                note_id[self.target_jp_field] += regex_content
+                note_id.flush()
+            else:
+                note_id[self.target_jp_field] += content
+                note_id.flush()
 
     def update_note_gui(self, note_id, content):
         if self.curr_disp_overwrite.isChecked():
-            note_id[self.target_jp_field] = content
-            note_id.flush()
+            if self.regex_apply_rbtn.isChecked():
+                regex_content = re.sub(f"{self.regex_text.text()}", f"{self.regex_text_replace.text()}", content)
+                note_id[self.target_jp_field] = regex_content
+                note_id.flush()
+            else:
+                note_id[self.target_jp_field] = content
+                note_id.flush()
         else:
-            note_id[self.target_jp_field] += f"<br>{content}"
-            note_id.flush()
+            if self.regex_apply_rbtn.isChecked():
+                regex_content = re.sub(f"{self.regex_text.text()}", f"{self.regex_text_replace.text()}", content)
+                note_id[self.target_jp_field] = regex_content
+                note_id.flush()
+            else:
+                note_id[self.target_jp_field] += f"<br>{content}"
+                note_id.flush()
         mw.requireReset(reason=ResetReason.EditCurrentInit, context=self)
         mw.delayedMaybeReset()
 
