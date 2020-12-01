@@ -11,11 +11,14 @@ target_jp_field = 'Def Jp'  (this is the field in which the addon will write int
 
 You can set them to fit your own cards. Remember to let the field name inside the single quotation makrs (ex. 'YOUR_FIELD' )
 
-There are three areas in the addon. Fetch Options, Current, Results.
+There are four areas in the addon. Fetch Options, Current, Results.
 
 In Fetch Options, you'll type a search filter (def. is "added:1" which will list all the new notes added today). When you press the button "Run" it will get the list of cards for that filter and get the last one in the list (which should be the newst added, with default settings). Then it will search the dictionaries and plot the results for you to click and it will add it to the card. 
 
 In Current, you'll choose if you wish to overwrite the Target field or jsut add to waht whatever's already there. When you click "Get", the addon will get the info form the card that you are CURRENTLY viewing in the reviewer, and plot the definitions. Once you choose one, it'll recalculate the reviewer. Note that sometimes it will come back into a different card, but the changes will be applied correctly.
+
+In regex you can choose to apply regular expression to the text from the definition when adding it to a card. The first field is for what you want to replace, and the second one for the replacement. the default settings searches for everything inside 「 」and removes it (or replaces it with a blank space). The reason for that is that personally I usually prefer not to have the sentence examples from the japanese dictionaries, since I already have exemple sentences in my cards.
+Remember if you want to use regex somethign else, you have to remember to use '\' before special characters like '('.
 
 In Results, you see three tabs in which the results for each dictionary will be ploted.
 
