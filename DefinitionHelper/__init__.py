@@ -338,7 +338,7 @@ class Def_Updater(object):
         else:
             if self.regex_apply_rbtn.isChecked():
                 regex_content = re.sub(f"{self.regex_text.text()}", f"{self.regex_text_replace.text()}", content)
-                note_id[self.target_jp_field] += regex_content
+                note_id[self.target_jp_field] += f"<br>{regex_content}"
                 note_id.flush()
             else:
                 note_id[self.target_jp_field] += f"<br>{content}"
