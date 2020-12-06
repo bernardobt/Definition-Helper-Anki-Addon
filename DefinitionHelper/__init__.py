@@ -12,19 +12,26 @@ from aqt.main import ResetReason
 class Def_Updater(object):
     focus_field = 'Focus'
     target_jp_field = 'Def Jp'
+    target_en_field = 'Def En'
 
-    results_font = "Meiryo"
-    font_size = 10
-    set_wrap = 21
+    results_font_jp = "Meiryo"
+    font_size_jp = 10
+    set_wrap_jp = 21
+
+    results_font_en = "Meiryo"
+    font_size_en = 10
+    set_wrap_en = 40
 
     dict_1 = "大辞林"
     dict_2 = "広辞苑"
     dict_3 = "新明解"
+    dict_4 = "jmdict_english"
     
     dict_folder_path = "D:\\Python\\MineHelper\\Dictionaries\\"
     dict_path = [dict_folder_path + dict_1,
                  dict_folder_path + dict_2,
-                 dict_folder_path + dict_3]
+                 dict_folder_path + dict_3,
+                 dict_folder_path + dict_4]
 
     def setupUi(self, AddonWindow):
         AddonWindow.setObjectName("Definition Updater")
@@ -113,6 +120,8 @@ class Def_Updater(object):
         self.dict_tabs = QtWidgets.QTabWidget(self.results_box)
         self.dict_tabs.setGeometry(QtCore.QRect(10, 20, 330, 400))
         self.dict_tabs.setObjectName("dict_tabs")
+        
+        # tab 1
         self.res_tab_1 = QtWidgets.QWidget()
         self.res_tab_1.setObjectName("res_tab_1")
         self.dict_1_tab_scroll_area = QtWidgets.QScrollArea(self.res_tab_1)
@@ -126,6 +135,8 @@ class Def_Updater(object):
         self.verticalLayout.setObjectName("verticalLayout")
         self.dict_1_tab_scroll_area.setWidget(self.scrollAreaWidgetContents)
         self.dict_tabs.addTab(self.res_tab_1, "")
+        
+        # tab 2
         self.res_tab_2 = QtWidgets.QWidget()
         self.res_tab_2.setObjectName("res_tab_2")
         self.dict_2_tab_scroll_area = QtWidgets.QScrollArea(self.res_tab_2)
@@ -139,6 +150,8 @@ class Def_Updater(object):
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.dict_2_tab_scroll_area.setWidget(self.scrollAreaWidgetContents_2)
         self.dict_tabs.addTab(self.res_tab_2, "")
+        
+        # tab 3
         self.res_tab_3 = QtWidgets.QWidget()
         self.res_tab_3.setObjectName("res_tab_3")
         self.dict_3_tab_scroll_area = QtWidgets.QScrollArea(self.res_tab_3)
@@ -152,6 +165,22 @@ class Def_Updater(object):
         self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.dict_3_tab_scroll_area.setWidget(self.scrollAreaWidgetContents_3)
         self.dict_tabs.addTab(self.res_tab_3, "")
+        
+        # tab 4
+        self.res_tab_4 = QtWidgets.QWidget()
+        self.res_tab_4.setObjectName("res_tab_4")
+        self.dict_4_tab_scroll_area = QtWidgets.QScrollArea(self.res_tab_4)
+        self.dict_4_tab_scroll_area.setGeometry(QtCore.QRect(5, 5, 315, 360))
+        self.dict_4_tab_scroll_area.setWidgetResizable(True)
+        self.dict_4_tab_scroll_area.setObjectName("dict_4_tab_scroll_area")
+        self.scrollAreaWidgetContents_4 = QtWidgets.QWidget()
+        self.scrollAreaWidgetContents_4.setGeometry(QtCore.QRect(1, 1, 313, 368))
+        self.scrollAreaWidgetContents_4.setObjectName("scrollAreaWidgetContents_4")
+        self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents_4)
+        self.verticalLayout_4.setObjectName("verticalLayout_4")
+        self.dict_4_tab_scroll_area.setWidget(self.scrollAreaWidgetContents_4)
+        self.dict_tabs.addTab(self.res_tab_4, "")
+
         AddonWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QtWidgets.QStatusBar(AddonWindow)
         self.statusbar.setObjectName("statusbar")
@@ -181,6 +210,7 @@ class Def_Updater(object):
         self.dict_tabs.setTabText(self.dict_tabs.indexOf(self.res_tab_1), _translate("AddonWindow", self.dict_1))
         self.dict_tabs.setTabText(self.dict_tabs.indexOf(self.res_tab_2), _translate("AddonWindow", self.dict_2))
         self.dict_tabs.setTabText(self.dict_tabs.indexOf(self.res_tab_3), _translate("AddonWindow", self.dict_3))
+        self.dict_tabs.setTabText(self.dict_tabs.indexOf(self.res_tab_4), _translate("AddonWindow", self.dict_4))
         self.regex_options_box.setTitle(_translate("MainWindow", "Regex"))
         self.regex_apply_rbtn.setText(_translate("MainWindow", "Apply"))
         self.regex_ignore_rbtn.setText(_translate("MainWindow", "Ignore"))
@@ -195,36 +225,67 @@ class Def_Updater(object):
         else:
             showInfo(f"Extra is selected\nQuery: '{qry_txt}'\n\nNo function yet :(")
 
-
     def get_current_gui(self, dict_list):
-        tab = [self.verticalLayout, self.verticalLayout_2, self.verticalLayout_3]
-        scroll_area = [self.scrollAreaWidgetContents, self.scrollAreaWidgetContents_2, self.scrollAreaWidgetContents_3]
+        tab = [self.verticalLayout, self.verticalLayout_2, self.verticalLayout_3, self.verticalLayout_4]
+        scroll_area = [self.scrollAreaWidgetContents, self.scrollAreaWidgetContents_2, self.scrollAreaWidgetContents_3, self.scrollAreaWidgetContents_4]
         rev = mw.reviewer.card
         nid = rev.nid
         note = mw.col.getNote(nid)
         self.curr_dis_textbox.setText(f"{note[self.focus_field]}")
         for i, dict in enumerate(dict_list):
-            result = self.query_dict(dict, note[self.focus_field])
-            self.plot_results_gui(result, note, scroll_area[i], tab[i])
+            if i != 3:
+                result = self.query_dict(dict, note[self.focus_field])
+                self.plot_results_gui(result, note, scroll_area[i], tab[i], self.results_font_jp, self.font_size_jp, self.set_wrap_jp, self.target_jp_field)
+            else:
+                result = self.jmedict_query_dict(dict, note[self.focus_field])
+                self.plot_results_gui(result, note, scroll_area[i], tab[i], self.results_font_en, self.font_size_en, self.set_wrap_en, self.target_en_field)
 
     def get_query_last(self, query_filter, dict_list):
-        tab = [self.verticalLayout, self.verticalLayout_2, self.verticalLayout_3]
-        scroll_area = [self.scrollAreaWidgetContents, self.scrollAreaWidgetContents_2, self.scrollAreaWidgetContents_3]
+        tab = [self.verticalLayout, self.verticalLayout_2, self.verticalLayout_3, self.verticalLayout_4]
+        scroll_area = [self.scrollAreaWidgetContents, self.scrollAreaWidgetContents_2, self.scrollAreaWidgetContents_3, self.scrollAreaWidgetContents_4]
         ids = mw.col.find_notes(query_filter)
         note = mw.col.getNote(ids[-1])
         # showInfo(f"Search: {note[self.focus_field]}")
         for i, dict in enumerate(dict_list):
-            result = self.query_dict(dict, note[self.focus_field])
-            self.plot_results_gui(result, note, scroll_area[i], tab[i])
+            if i != 3:
+                result = self.query_dict(dict, note[self.focus_field])
+                self.plot_results(result, note, scroll_area[i], tab[i], self.results_font_jp, self.font_size_jp,
+                                      self.set_wrap_jp, self.target_jp_field)
+            else:
+                result = self.jmedict_query_dict(dict, note[self.focus_field])
+                self.plot_results(result, note, scroll_area[i], tab[i], self.results_font_en, self.font_size_en,
+                                      self.set_wrap_en, self.target_en_field)
 
-    def get_query_loop(self, query_filter):
-        ids = mw.col.find_notes(query_filter)
-        # showInfo(f"Cards found: {len(ids)}")
-        for id in ids:
-            note = mw.col.getNote(id)
-            result = self.query_dict(self.term_bank_file_list, note[self.focus_field])
-            # showInfo(f"Search: {note[self.focus_field]}")
-            self.plot_results(result, note, self.verticalLayout)
+    def jmedict_query_dict(self, list_entries, query):
+        result = []
+        for bank in list_entries:
+            for entry in bank:
+                if entry[0] == query:
+                    temp = []
+                    query_id = f"[{entry[0]}] [{entry[1]}]"
+                    temp.append(query_id)
+                    tag_str = entry[2].split(' ')
+                    new_tag = self.jmedict_tag_handler(tag_str, list_entries[1])
+                    temp.append(new_tag)
+
+                    def_str = ', '.join(entry[5])
+                    temp.append(def_str)
+                    sp_tag_str = entry[7].split(' ')
+                    new_sp_tags = self.jmedict_tag_handler(sp_tag_str, list_entries[1])
+                    temp.append(new_sp_tags)
+
+                    result.append(temp)
+
+        return result
+
+    def jmedict_tag_handler(self, to_handle_list, tag_bank):
+        fixed_tags = []
+        for tag in to_handle_list:
+            for listed_tag in tag_bank:
+                if tag == listed_tag[0]:
+                    fixed_tags.append(listed_tag[3])
+        tags_in_list = '; '.join(fixed_tags)
+        return tags_in_list
 
     def get_file_list(self, path):
         arr = os.listdir(path)
@@ -250,9 +311,6 @@ class Def_Updater(object):
                     def_str = ' '.join(map(str, entry[5]))
                     def_list = def_str.split('\n')
                     def_list += def_list.pop()
-                    ## if you wan to add the term and reading in the results
-                    # def_list.insert(0,f"{entry[0]} ")
-                    # def_list.insert(1, f"{entry[1]}")
                     result.append(def_list)
         return result
 
@@ -260,7 +318,7 @@ class Def_Updater(object):
         for i in reversed(range(layout.count())):
             layout.itemAt(i).widget().setParent(None)
 
-    def plot_results(self, results_list, note, which_tab, which_scroll):
+    def plot_results(self, results_list, note, which_scroll, which_tab, results_font, font_size, set_wrap, target_field):
         self.clearLayout(which_tab)
         if results_list:
             for dindex, result in enumerate(results_list):
@@ -271,20 +329,19 @@ class Def_Updater(object):
                 for lindex, element in enumerate(result):
                     self.tab_res_button = QtWidgets.QPushButton(which_scroll)
                     self.tab_res_button.setObjectName("pushButton")
-                    self.tab_res_button.setFont(QFont(self.results_font, self.font_size))
-                    new_ele = wrap(element, self.set_wrap)
+                    self.tab_res_button.setFont(QFont(results_font, font_size))
+                    new_ele = wrap(element, set_wrap)
                     wraped_ele = "\n".join(new_ele)
                     self.tab_res_button.setText(f"{wraped_ele}")
                     which_tab.addWidget(self.tab_res_button)
-                    self.tab_res_button.clicked.connect(lambda ch, element=element: self.update_note(note, element))
+                    self.tab_res_button.clicked.connect(lambda ch, element=element: self.update_note(note, element, target_field))
         else:
-            # showInfo("No Results found!")
             self.tab_res_label = QtWidgets.QLabel(which_scroll)
             self.tab_res_label.setObjectName("label")
             self.tab_res_label.setText(f"No Results found!")
             which_tab.addWidget(self.tab_res_label)
 
-    def plot_results_gui(self, results_list, note, which_scroll, which_tab):
+    def plot_results_gui(self, results_list, note, which_scroll, which_tab, results_font, font_size, set_wrap, target_field):
         self.clearLayout(which_tab)
         if results_list:
             for dindex, result in enumerate(results_list):
@@ -295,20 +352,19 @@ class Def_Updater(object):
                 for lindex, element in enumerate(result):
                     self.tab_res_button = QtWidgets.QPushButton(which_scroll)
                     self.tab_res_button.setObjectName("pushButton")
-                    self.tab_res_button.setFont(QFont(self.results_font, self.font_size))
-                    new_ele = wrap(element, self.set_wrap)
+                    self.tab_res_button.setFont(QFont(results_font, font_size))
+                    new_ele = wrap(element, set_wrap)
                     wraped_ele = "\n".join(new_ele)
                     self.tab_res_button.setText(f"{wraped_ele}")
                     which_tab.addWidget(self.tab_res_button)
-                    self.tab_res_button.clicked.connect(lambda ch, element=element: self.update_note_gui(note, element))
+                    self.tab_res_button.clicked.connect(lambda ch, element=element: self.update_note_gui(note, element, target_field))
         else:
-            # showInfo("No Results found!")
             self.tab_res_label = QtWidgets.QLabel(which_scroll)
             self.tab_res_label.setObjectName("label")
             self.tab_res_label.setText(f"No Results found!")
             which_tab.addWidget(self.tab_res_label)
 
-    def update_note(self, note_id, content):
+    def update_note(self, note_id, content, target_field):
         if self.curr_disp_overwrite.isChecked():
             if self.regex_apply_rbtn.isChecked():
                 regex_content = re.sub(f"{self.regex_text.text()}", f"{self.regex_text_replace}", content)
@@ -320,28 +376,28 @@ class Def_Updater(object):
         else:
             if self.regex_apply_rbtn.isChecked():
                 regex_content = re.sub(f"{self.regex_text.text()}", f"{self.regex_text_replace}", content)
-                note_id[self.target_jp_field] += regex_content
+                note_id[target_field] += regex_content
                 note_id.flush()
             else:
-                note_id[self.target_jp_field] += content
+                note_id[target_field] += content
                 note_id.flush()
 
-    def update_note_gui(self, note_id, content):
+    def update_note_gui(self, note_id, content, target_field):
         if self.curr_disp_overwrite.isChecked():
             if self.regex_apply_rbtn.isChecked():
                 regex_content = re.sub(f"{self.regex_text.text()}", f"{self.regex_text_replace.text()}", content)
-                note_id[self.target_jp_field] = regex_content
+                note_id[target_field] = regex_content
                 note_id.flush()
             else:
-                note_id[self.target_jp_field] = content
+                note_id[target_field] = content
                 note_id.flush()
         else:
             if self.regex_apply_rbtn.isChecked():
                 regex_content = re.sub(f"{self.regex_text.text()}", f"{self.regex_text_replace.text()}", content)
-                note_id[self.target_jp_field] += f"<br>{regex_content}"
+                note_id[target_field] += f"<br>{regex_content}"
                 note_id.flush()
             else:
-                note_id[self.target_jp_field] += f"<br>{content}"
+                note_id[target_field] += f"<br>{content}"
                 note_id.flush()
         mw.requireReset(reason=ResetReason.EditCurrentInit, context=self)
         mw.delayedMaybeReset()
