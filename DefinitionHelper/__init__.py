@@ -120,7 +120,7 @@ class Def_Updater(object):
         self.dict_tabs = QtWidgets.QTabWidget(self.results_box)
         self.dict_tabs.setGeometry(QtCore.QRect(10, 20, 330, 400))
         self.dict_tabs.setObjectName("dict_tabs")
-        
+
         # tab 1
         self.res_tab_1 = QtWidgets.QWidget()
         self.res_tab_1.setObjectName("res_tab_1")
@@ -135,7 +135,7 @@ class Def_Updater(object):
         self.verticalLayout.setObjectName("verticalLayout")
         self.dict_1_tab_scroll_area.setWidget(self.scrollAreaWidgetContents)
         self.dict_tabs.addTab(self.res_tab_1, "")
-        
+
         # tab 2
         self.res_tab_2 = QtWidgets.QWidget()
         self.res_tab_2.setObjectName("res_tab_2")
@@ -150,7 +150,7 @@ class Def_Updater(object):
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.dict_2_tab_scroll_area.setWidget(self.scrollAreaWidgetContents_2)
         self.dict_tabs.addTab(self.res_tab_2, "")
-        
+
         # tab 3
         self.res_tab_3 = QtWidgets.QWidget()
         self.res_tab_3.setObjectName("res_tab_3")
@@ -165,7 +165,7 @@ class Def_Updater(object):
         self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.dict_3_tab_scroll_area.setWidget(self.scrollAreaWidgetContents_3)
         self.dict_tabs.addTab(self.res_tab_3, "")
-        
+
         # tab 4
         self.res_tab_4 = QtWidgets.QWidget()
         self.res_tab_4.setObjectName("res_tab_4")
@@ -376,10 +376,10 @@ class Def_Updater(object):
         else:
             if self.regex_apply_rbtn.isChecked():
                 regex_content = re.sub(f"{self.regex_text.text()}", f"{self.regex_text_replace}", content)
-                note_id[target_field] += regex_content
+                note_id[target_field] += f"<br>{regex_content}"
                 note_id.flush()
             else:
-                note_id[target_field] += content
+                note_id[target_field] += f"<br>{content}"
                 note_id.flush()
 
     def update_note_gui(self, note_id, content, target_field):
