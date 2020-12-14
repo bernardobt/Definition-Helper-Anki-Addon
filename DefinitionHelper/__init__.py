@@ -375,7 +375,7 @@ class Def_Updater(object):
                 note_id.flush()
         else:
             if self.regex_apply_rbtn.isChecked():
-                regex_content = re.sub(f"{self.regex_text.text()}", f"{self.regex_text_replace}", content)
+                regex_content = re.sub(f"{self.regex_text.text()}", f"{self.regex_text_replace.text()}", content)
                 note_id[target_field] += f"<br>{regex_content}"
                 note_id.flush()
             else:
