@@ -367,7 +367,7 @@ class Def_Updater(object):
     def update_note(self, note_id, content, target_field):
         if self.curr_disp_overwrite.isChecked():
             if self.regex_apply_rbtn.isChecked():
-                regex_content = re.sub(f"{self.regex_text.text()}", f"{self.regex_text_replace}", content)
+                regex_content = re.sub(f"{self.regex_text.text()}", f"{self.regex_text_replace.text()}", content)
                 note_id[self.target_jp_field] = regex_content
                 note_id.flush()
             else:
