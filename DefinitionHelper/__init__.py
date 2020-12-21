@@ -32,7 +32,7 @@ class Ui_AddonWindow(object):
     dict_3 = ""
     dict_4 = ""
 
-    dict_folder_path = "D:\\Python\\MineHelper\\Dictionaries\\"
+    dict_folder_path = ""
     dict_path = [dict_folder_path + dict_1,
                  dict_folder_path + dict_2,
                  dict_folder_path + dict_3,
