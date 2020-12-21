@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 from aqt import mw
 from aqt.utils import showInfo
 from aqt.qt import *
@@ -8,11 +9,15 @@ from textwrap import wrap
 from PyQt5 import QtCore, QtWidgets
 from aqt.main import ResetReason
 
+from . import mecab_wrapper
 
-class Def_Updater(object):
-    focus_field = 'Focus'
-    target_jp_field = 'Def Jp'
-    target_en_field = 'Def En'
+class Ui_AddonWindow(object):
+
+    # Config Setup
+    focus_field = ''
+    target_jp_field = ''
+    target_en_field = ''
+    target_deck = ""
 
     results_font_jp = "Meiryo"
     font_size_jp = 10
@@ -22,54 +27,40 @@ class Def_Updater(object):
     font_size_en = 10
     set_wrap_en = 40
 
-    dict_1 = "大辞林"
-    dict_2 = "広辞苑"
-    dict_3 = "新明解"
-    dict_4 = "jmdict_english"
-    
+    dict_1 = ""
+    dict_2 = ""
+    dict_3 = ""
+    dict_4 = ""
+
     dict_folder_path = "D:\\Python\\MineHelper\\Dictionaries\\"
     dict_path = [dict_folder_path + dict_1,
                  dict_folder_path + dict_2,
                  dict_folder_path + dict_3,
                  dict_folder_path + dict_4]
 
-    def setupUi(self, AddonWindow):
-        AddonWindow.setObjectName("Definition Updater")
-        AddonWindow.resize(366, 680)
-        AddonWindow.setMinimumSize(366, 680)
 
-        #Fetch options
+    def setupUi(self, AddonWindow):
+
+        AddonWindow.setObjectName("AddonWindow")
+        AddonWindow.resize(375, 720)
+        AddonWindow.setMinimumSize(QtCore.QSize(375, 720))
+
         self.dictionaries_list = self.load_multi_dict(self.dict_path)
+
         self.centralwidget = QtWidgets.QWidget(AddonWindow)
         self.centralwidget.setObjectName("centralwidget")
-        self.fetch_options_box = QtWidgets.QGroupBox(self.centralwidget)
-        self.fetch_options_box.setGeometry(QtCore.QRect(10, 10, 350, 60))
-        self.fetch_options_box.setObjectName("fetch_options_box")
-        self.horizontalLayoutWidget = QtWidgets.QWidget(self.fetch_options_box)
-        self.horizontalLayoutWidget.setGeometry(QtCore.QRect(10, 20, 330, 30))
-        self.horizontalLayoutWidget.setObjectName("horizontalLayoutWidget")
-        self.fetch_box_h_layout = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget)
-        self.fetch_box_h_layout.setContentsMargins(0, 0, 0, 0)
-        self.fetch_box_h_layout.setObjectName("fetch_box_h_layout")
-        self.fb_rbtn_last = QtWidgets.QRadioButton(self.horizontalLayoutWidget)
-        self.fb_rbtn_last.setChecked(True)
-        self.fb_rbtn_last.setObjectName("fb_rbtn_last")
-        self.fetch_box_h_layout.addWidget(self.fb_rbtn_last)
-        # self.fb_rbtn_loop = QtWidgets.QRadioButton(self.horizontalLayoutWidget)
-        # self.fb_rbtn_loop.setObjectName("fb_rbtn_loop")
-        # self.fetch_box_h_layout.addWidget(self.fb_rbtn_loop)
-        self.fb_le_query = QtWidgets.QLineEdit(self.horizontalLayoutWidget)
-        self.fb_le_query.setObjectName("fb_le_query")
-        self.fetch_box_h_layout.addWidget(self.fb_le_query)
-        self.fb_btn_run = QtWidgets.QPushButton(self.horizontalLayoutWidget)
-        self.fb_btn_run.setObjectName("fb_btn_run")
-        self.fetch_box_h_layout.addWidget(self.fb_btn_run)
 
-        # Get current
-        self.current_display_box = QtWidgets.QGroupBox(self.centralwidget)
-        self.current_display_box.setGeometry(QtCore.QRect(10, 80, 350, 60))
-        self.current_display_box.setObjectName("current_display_box")
-        self.horizontalLayoutWidget_2 = QtWidgets.QWidget(self.current_display_box)
+        self.tabWidget_menu = QtWidgets.QTabWidget(self.centralwidget)
+        self.tabWidget_menu.setEnabled(True)
+        self.tabWidget_menu.setGeometry(QtCore.QRect(5, 10, 360, 230))
+        self.tabWidget_menu.setObjectName("tabWidget_menu")
+
+
+        # Current Tab
+        self.tab = QtWidgets.QWidget()
+        self.tab.setObjectName("tab")
+
+        self.horizontalLayoutWidget_2 = QtWidgets.QWidget(self.tab)
         self.horizontalLayoutWidget_2.setGeometry(QtCore.QRect(10, 20, 330, 30))
         self.horizontalLayoutWidget_2.setObjectName("horizontalLayoutWidget_2")
         self.current_box_h_layout = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget_2)
@@ -88,13 +79,34 @@ class Def_Updater(object):
         self.curr_dis_button = QtWidgets.QPushButton(self.horizontalLayoutWidget_2)
         self.curr_dis_button.setObjectName("curr_dis_button")
         self.current_box_h_layout.addWidget(self.curr_dis_button)
+        self.tabWidget_menu.addTab(self.tab, "")
 
-        #regex stuff
-        self.regex_options_box = QtWidgets.QGroupBox(self.centralwidget)
-        self.regex_options_box.setGeometry(QtCore.QRect(10, 150, 350, 60))
-        self.regex_options_box.setObjectName("regex_options_box")
-        self.horizontalLayoutWidget_3 = QtWidgets.QWidget(self.regex_options_box)
-        self.horizontalLayoutWidget_3.setGeometry(QtCore.QRect(10, 20, 330, 30))
+        self.curr_dis_button.clicked.connect(lambda: self.get_current_gui(self.dictionaries_list))
+
+        # Fetch Recent
+        self.horizontalLayoutWidget = QtWidgets.QWidget(self.tab)
+        self.horizontalLayoutWidget.setGeometry(QtCore.QRect(10, 50, 330, 30))
+        self.horizontalLayoutWidget.setObjectName("horizontalLayoutWidget")
+        self.fetch_box_h_layout = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget)
+        self.fetch_box_h_layout.setContentsMargins(0, 0, 0, 0)
+        self.fetch_box_h_layout.setObjectName("fetch_box_h_layout")
+        self.fb_rbtn_last = QtWidgets.QRadioButton(self.horizontalLayoutWidget)
+        self.fb_rbtn_last.setChecked(True)
+        self.fb_rbtn_last.setObjectName("fb_rbtn_last")
+        self.fetch_box_h_layout.addWidget(self.fb_rbtn_last)
+        self.fb_le_query = QtWidgets.QLineEdit(self.horizontalLayoutWidget)
+        self.fb_le_query.setObjectName("fb_le_query")
+        self.fetch_box_h_layout.addWidget(self.fb_le_query)
+        self.fb_btn_run = QtWidgets.QPushButton(self.horizontalLayoutWidget)
+        self.fb_btn_run.setObjectName("fb_btn_run")
+        self.fetch_box_h_layout.addWidget(self.fb_btn_run)
+
+        self.fb_btn_run.clicked.connect(
+            lambda: self.run_clicked(self.fb_rbtn_last.isChecked(), self.fb_le_query.text()))
+
+        # Regex
+        self.horizontalLayoutWidget_3 = QtWidgets.QWidget(self.tab)
+        self.horizontalLayoutWidget_3.setGeometry(QtCore.QRect(10, 80, 330, 30))
         self.horizontalLayoutWidget_3.setObjectName("horizontalLayoutWidget_3")
         self.regex_box_h_layout = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget_3)
         self.regex_box_h_layout.setContentsMargins(0, 0, 0, 0)
@@ -113,23 +125,77 @@ class Def_Updater(object):
         self.regex_text_replace.setObjectName("regex_text_replace")
         self.regex_box_h_layout.addWidget(self.regex_text_replace)
 
-        #Results box
+        #tab 2
+        self.tab_2 = QtWidgets.QWidget()
+        self.tab_2.setObjectName("tab_2")
+        # self.tabWidget_menu.addTab(self.tab_2, "")
+
+        # Tab 3
+        self.tab_3 = QtWidgets.QWidget()
+        self.tab_3.setObjectName("tab_3")
+        # self.tabWidget_menu.addTab(self.tab_3, "")
+
+        # Parser
+        self.tab_4 = QtWidgets.QWidget()
+        self.tab_4.setObjectName("tab_4")
+
+        self.horizontalLayoutWidget_6 = QtWidgets.QWidget(self.tab_4)
+        self.horizontalLayoutWidget_6.setGeometry(QtCore.QRect(10, 10, 330, 30))
+        self.horizontalLayoutWidget_6.setObjectName("horizontalLayoutWidget_6")
+        self.horizontalLayout_4 = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget_6)
+        self.horizontalLayout_4.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
+        self.parser_label_2 = QtWidgets.QLabel(self.horizontalLayoutWidget_6)
+        self.parser_label_2.setMinimumSize(QtCore.QSize(45, 30))
+        self.parser_label_2.setLayoutDirection(QtCore.Qt.LeftToRight)
+        self.parser_label_2.setAlignment(QtCore.Qt.AlignCenter)
+        self.parser_label_2.setObjectName("parser_label_2")
+        self.horizontalLayout_4.addWidget(self.parser_label_2)
+        self.parser_text_2 = QtWidgets.QLineEdit(self.horizontalLayoutWidget_6)
+        self.parser_text_2.setObjectName("parser_text_2")
+        self.horizontalLayout_4.addWidget(self.parser_text_2)
+        self.parser_pushbutton_2 = QtWidgets.QPushButton(self.horizontalLayoutWidget_6)
+        self.parser_pushbutton_2.setObjectName("parser_pushbutton_2")
+        self.horizontalLayout_4.addWidget(self.parser_pushbutton_2)
+
+        self.parser_tab_scroll_area_2 = QtWidgets.QScrollArea(self.tab_4)
+        self.parser_tab_scroll_area_2.setGeometry(QtCore.QRect(5, 40, 350, 160))
+        self.parser_tab_scroll_area_2.setWidgetResizable(True)
+        self.parser_tab_scroll_area_2.setObjectName("parser_tab_scroll_area_2")
+
+        self.scrollAreaWidgetContents_parser = QtWidgets.QWidget()
+        self.scrollAreaWidgetContents_parser.setGeometry(QtCore.QRect(1, 1, 350, 160))
+        self.scrollAreaWidgetContents_parser.setObjectName("scrollAreaWidgetContents_parser")
+
+        self.verticalLayout_parser = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents_parser)
+        self.verticalLayout_parser.setObjectName("verticalLayoutWidget_4")
+        self.parser_tab_scroll_area_2.setWidget(self.scrollAreaWidgetContents_parser)
+
+        self.tabWidget_menu.addTab(self.tab_4, "")
+
+        self.parser_pushbutton_2.clicked.connect(lambda: self.mecab_parse(self.parser_text_2.text()))
+
+        # Settings
+        self.tab_5 = QtWidgets.QWidget()
+        self.tab_5.setObjectName("tab_5")
+
+        # Results Box
         self.results_box = QtWidgets.QGroupBox(self.centralwidget)
-        self.results_box.setGeometry(QtCore.QRect(10, 220, 350, 430))
+        self.results_box.setGeometry(QtCore.QRect(10, 250, 360, 450))
         self.results_box.setObjectName("results_box")
         self.dict_tabs = QtWidgets.QTabWidget(self.results_box)
-        self.dict_tabs.setGeometry(QtCore.QRect(10, 20, 330, 400))
+        self.dict_tabs.setGeometry(QtCore.QRect(10, 20, 340, 420))
         self.dict_tabs.setObjectName("dict_tabs")
 
         # tab 1
         self.res_tab_1 = QtWidgets.QWidget()
         self.res_tab_1.setObjectName("res_tab_1")
         self.dict_1_tab_scroll_area = QtWidgets.QScrollArea(self.res_tab_1)
-        self.dict_1_tab_scroll_area.setGeometry(QtCore.QRect(5, 5, 315, 360))
+        self.dict_1_tab_scroll_area.setGeometry(QtCore.QRect(5, 5, 325, 380))
         self.dict_1_tab_scroll_area.setWidgetResizable(True)
         self.dict_1_tab_scroll_area.setObjectName("dict_1_tab_scroll_area")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(1, 1, 313, 368))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(1, 1, 323, 378))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout.setObjectName("verticalLayout")
@@ -140,11 +206,11 @@ class Def_Updater(object):
         self.res_tab_2 = QtWidgets.QWidget()
         self.res_tab_2.setObjectName("res_tab_2")
         self.dict_2_tab_scroll_area = QtWidgets.QScrollArea(self.res_tab_2)
-        self.dict_2_tab_scroll_area.setGeometry(QtCore.QRect(5, 5, 315, 360))
+        self.dict_2_tab_scroll_area.setGeometry(QtCore.QRect(5, 5, 325, 380))
         self.dict_2_tab_scroll_area.setWidgetResizable(True)
         self.dict_2_tab_scroll_area.setObjectName("dict_2_tab_scroll_area")
         self.scrollAreaWidgetContents_2 = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents_2.setGeometry(QtCore.QRect(1, 1, 313, 368))
+        self.scrollAreaWidgetContents_2.setGeometry(QtCore.QRect(1, 1, 323, 378))
         self.scrollAreaWidgetContents_2.setObjectName("scrollAreaWidgetContents_2")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents_2)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
@@ -155,11 +221,11 @@ class Def_Updater(object):
         self.res_tab_3 = QtWidgets.QWidget()
         self.res_tab_3.setObjectName("res_tab_3")
         self.dict_3_tab_scroll_area = QtWidgets.QScrollArea(self.res_tab_3)
-        self.dict_3_tab_scroll_area.setGeometry(QtCore.QRect(5, 5, 315, 360))
+        self.dict_3_tab_scroll_area.setGeometry(QtCore.QRect(5, 5, 325, 380))
         self.dict_3_tab_scroll_area.setWidgetResizable(True)
         self.dict_3_tab_scroll_area.setObjectName("dict_3_tab_scroll_area")
         self.scrollAreaWidgetContents_3 = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents_3.setGeometry(QtCore.QRect(1, 1, 313, 368))
+        self.scrollAreaWidgetContents_3.setGeometry(QtCore.QRect(1, 1, 323, 378))
         self.scrollAreaWidgetContents_3.setObjectName("scrollAreaWidgetContents_3")
         self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents_3)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
@@ -170,11 +236,11 @@ class Def_Updater(object):
         self.res_tab_4 = QtWidgets.QWidget()
         self.res_tab_4.setObjectName("res_tab_4")
         self.dict_4_tab_scroll_area = QtWidgets.QScrollArea(self.res_tab_4)
-        self.dict_4_tab_scroll_area.setGeometry(QtCore.QRect(5, 5, 315, 360))
+        self.dict_4_tab_scroll_area.setGeometry(QtCore.QRect(5, 5, 325, 380))
         self.dict_4_tab_scroll_area.setWidgetResizable(True)
         self.dict_4_tab_scroll_area.setObjectName("dict_4_tab_scroll_area")
         self.scrollAreaWidgetContents_4 = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents_4.setGeometry(QtCore.QRect(1, 1, 313, 368))
+        self.scrollAreaWidgetContents_4.setGeometry(QtCore.QRect(1, 1, 323, 378))
         self.scrollAreaWidgetContents_4.setObjectName("scrollAreaWidgetContents_4")
         self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents_4)
         self.verticalLayout_4.setObjectName("verticalLayout_4")
@@ -182,52 +248,66 @@ class Def_Updater(object):
         self.dict_tabs.addTab(self.res_tab_4, "")
 
         AddonWindow.setCentralWidget(self.centralwidget)
-        self.statusbar = QtWidgets.QStatusBar(AddonWindow)
-        self.statusbar.setObjectName("statusbar")
-        AddonWindow.setStatusBar(self.statusbar)
-
-        self.curr_dis_button.clicked.connect(lambda: self.get_current_gui(self.dictionaries_list))
-        self.fb_btn_run.clicked.connect(lambda: self.run_clicked(self.fb_rbtn_last.isChecked(), self.fb_le_query.text()))
 
         self.retranslateUi(AddonWindow)
+        self.tabWidget_menu.setCurrentIndex(0)
         self.dict_tabs.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(AddonWindow)
 
     def retranslateUi(self, AddonWindow):
         _translate = QtCore.QCoreApplication.translate
-        AddonWindow.setWindowTitle(_translate("AddonWindow", "Definition Helper"))
-        self.fetch_options_box.setTitle(_translate("AddonWindow", "Fetch Options"))
-        self.fb_rbtn_last.setText(_translate("AddonWindow", "Last"))
-        # self.fb_rbtn_loop.setText(_translate("AddonWindow", "Extra"))
-        self.fb_le_query.setText(_translate("AddonWindow", "added:1"))
-        self.fb_btn_run.setText(_translate("AddonWindow", "Run"))
-        self.current_display_box.setTitle(_translate("AddonWindow", "Current"))
+        AddonWindow.setWindowTitle(_translate("AddonWindow", "Definition Aid"))
+
+        # Current
+        self.tabWidget_menu.setTabText(self.tabWidget_menu.indexOf(self.tab), _translate("AddonWindow", "Current"))
         self.curr_dis_textbox.setText(_translate("AddonWindow", "current note"))
         self.curr_disp_overwrite.setText(_translate("AddonWindow", "Overwrite"))
         self.curr_disp_add.setText(_translate("AddonWindow", "Add"))
         self.curr_dis_button.setText(_translate("AddonWindow", "Get"))
         self.results_box.setTitle(_translate("AddonWindow", "Results"))
-        self.dict_tabs.setTabText(self.dict_tabs.indexOf(self.res_tab_1), _translate("AddonWindow", self.dict_1))
-        self.dict_tabs.setTabText(self.dict_tabs.indexOf(self.res_tab_2), _translate("AddonWindow", self.dict_2))
-        self.dict_tabs.setTabText(self.dict_tabs.indexOf(self.res_tab_3), _translate("AddonWindow", self.dict_3))
-        self.dict_tabs.setTabText(self.dict_tabs.indexOf(self.res_tab_4), _translate("AddonWindow", self.dict_4))
-        self.regex_options_box.setTitle(_translate("MainWindow", "Regex"))
+
+        # Fetch last
+        self.tabWidget_menu.setTabText(self.tabWidget_menu.indexOf(self.tab_2), _translate("AddonWindow", "Most Recent"))
+        self.fb_rbtn_last.setText(_translate("AddonWindow", "Last"))
+        self.fb_le_query.setText(_translate("AddonWindow", "added:1"))
+        self.fb_btn_run.setText(_translate("AddonWindow", "Run"))
+
+        # Regex
+        self.tabWidget_menu.setTabText(self.tabWidget_menu.indexOf(self.tab_3), _translate("AddonWindow", "Regex"))
+        self.regex_apply_rbtn.setText(_translate("AddonWindow", "Apply"))
+        self.regex_ignore_rbtn.setText(_translate("AddonWindow", "Ignore"))
+        self.regex_text.setText(_translate("AddonWindow", "regex"))
         self.regex_apply_rbtn.setText(_translate("MainWindow", "Apply"))
         self.regex_ignore_rbtn.setText(_translate("MainWindow", "Ignore"))
         self.regex_text.setText(_translate("MainWindow", "(?:(BEGIN:)|(\「)).*?(?(1):END)(?(2)\」)"))
         self.regex_text_replace.setText(_translate("MainWindow", ""))
 
+        # Parser
+        self.parser_label_2.setText(_translate("AddonWindow", "Parse"))
+        self.parser_pushbutton_2.setText(_translate("AddonWindow", "Parse"))
+        self.tabWidget_menu.setTabText(self.tabWidget_menu.indexOf(self.tab_4), _translate("AddonWindow", "Parser"))
+        self.parser_text_2.setText("授業が月曜日から金曜日まであります。")
+
+        # Settings
+        self.tabWidget_menu.setTabText(self.tabWidget_menu.indexOf(self.tab_5), _translate("AddonWindow", "Settings"))
+
+        # Results Box
+        self.results_box.setTitle(_translate("AddonWindow", "Results"))
+        self.dict_tabs.setTabText(self.dict_tabs.indexOf(self.res_tab_1), _translate("AddonWindow", self.dict_1))
+        self.dict_tabs.setTabText(self.dict_tabs.indexOf(self.res_tab_2), _translate("AddonWindow", self.dict_2))
+        self.dict_tabs.setTabText(self.dict_tabs.indexOf(self.res_tab_3), _translate("AddonWindow", self.dict_3))
+        self.dict_tabs.setTabText(self.dict_tabs.indexOf(self.res_tab_4), _translate("AddonWindow", self.dict_4))
 
     def run_clicked(self, chk, qry_txt):
         if chk:
-            # showInfo(f"Last added is selected\nQuery: '{qry_txt}'")
             self.get_query_last(qry_txt, self.dictionaries_list)
         else:
             showInfo(f"Extra is selected\nQuery: '{qry_txt}'\n\nNo function yet :(")
 
     def get_current_gui(self, dict_list):
         tab = [self.verticalLayout, self.verticalLayout_2, self.verticalLayout_3, self.verticalLayout_4]
-        scroll_area = [self.scrollAreaWidgetContents, self.scrollAreaWidgetContents_2, self.scrollAreaWidgetContents_3, self.scrollAreaWidgetContents_4]
+        scroll_area = [self.scrollAreaWidgetContents, self.scrollAreaWidgetContents_2, self.scrollAreaWidgetContents_3,
+                       self.scrollAreaWidgetContents_4]
         rev = mw.reviewer.card
         nid = rev.nid
         note = mw.col.getNote(nid)
@@ -235,26 +315,28 @@ class Def_Updater(object):
         for i, dict in enumerate(dict_list):
             if i != 3:
                 result = self.query_dict(dict, note[self.focus_field])
-                self.plot_results_gui(result, note, scroll_area[i], tab[i], self.results_font_jp, self.font_size_jp, self.set_wrap_jp, self.target_jp_field)
+                self.plot_results_gui(result, note, scroll_area[i], tab[i], self.results_font_jp, self.font_size_jp,
+                                      self.set_wrap_jp, self.target_jp_field)
             else:
                 result = self.jmedict_query_dict(dict, note[self.focus_field])
-                self.plot_results_gui(result, note, scroll_area[i], tab[i], self.results_font_en, self.font_size_en, self.set_wrap_en, self.target_en_field)
+                self.plot_results_gui(result, note, scroll_area[i], tab[i], self.results_font_en, self.font_size_en,
+                                      self.set_wrap_en, self.target_en_field)
 
     def get_query_last(self, query_filter, dict_list):
         tab = [self.verticalLayout, self.verticalLayout_2, self.verticalLayout_3, self.verticalLayout_4]
-        scroll_area = [self.scrollAreaWidgetContents, self.scrollAreaWidgetContents_2, self.scrollAreaWidgetContents_3, self.scrollAreaWidgetContents_4]
+        scroll_area = [self.scrollAreaWidgetContents, self.scrollAreaWidgetContents_2, self.scrollAreaWidgetContents_3,
+                       self.scrollAreaWidgetContents_4]
         ids = mw.col.find_notes(query_filter)
         note = mw.col.getNote(ids[-1])
-        # showInfo(f"Search: {note[self.focus_field]}")
         for i, dict in enumerate(dict_list):
             if i != 3:
                 result = self.query_dict(dict, note[self.focus_field])
                 self.plot_results(result, note, scroll_area[i], tab[i], self.results_font_jp, self.font_size_jp,
-                                      self.set_wrap_jp, self.target_jp_field)
+                                  self.set_wrap_jp, self.target_jp_field)
             else:
                 result = self.jmedict_query_dict(dict, note[self.focus_field])
                 self.plot_results(result, note, scroll_area[i], tab[i], self.results_font_en, self.font_size_en,
-                                      self.set_wrap_en, self.target_en_field)
+                                  self.set_wrap_en, self.target_en_field)
 
     def jmedict_query_dict(self, list_entries, query):
         result = []
@@ -270,12 +352,27 @@ class Def_Updater(object):
 
                     def_str = ', '.join(entry[5])
                     temp.append(def_str)
-                    sp_tag_str = entry[7].split(' ')
-                    new_sp_tags = self.jmedict_tag_handler(sp_tag_str, list_entries[1])
-                    temp.append(new_sp_tags)
+                    if entry[7] != "":
+                        sp_tag_str = entry[7].split(' ')
+                        new_sp_tags = self.jmedict_tag_handler(sp_tag_str, list_entries[1])
+                        temp.append(new_sp_tags)
 
                     result.append(temp)
+                elif entry[1] == query:
+                    temp = []
+                    query_id = f"[{entry[0]}] [{entry[1]}]"
+                    temp.append(query_id)
+                    tag_str = entry[2].split(' ')
+                    new_tag = self.jmedict_tag_handler(tag_str, list_entries[1])
+                    temp.append(new_tag)
 
+                    def_str = ', '.join(entry[5])
+                    temp.append(def_str)
+                    if entry[7] != "":
+                        sp_tag_str = entry[7].split(' ')
+                        new_sp_tags = self.jmedict_tag_handler(sp_tag_str, list_entries[1])
+                        temp.append(new_sp_tags)
+                    result.append(temp)
         return result
 
     def jmedict_tag_handler(self, to_handle_list, tag_bank):
@@ -312,13 +409,19 @@ class Def_Updater(object):
                     def_list = def_str.split('\n')
                     def_list += def_list.pop()
                     result.append(def_list)
+                elif entry[1] == query:
+                    def_str = ' '.join(map(str, entry[5]))
+                    def_list = def_str.split('\n')
+                    def_list += def_list.pop()
+                    result.append(def_list)
         return result
 
     def clearLayout(self, layout):
         for i in reversed(range(layout.count())):
             layout.itemAt(i).widget().setParent(None)
 
-    def plot_results(self, results_list, note, which_scroll, which_tab, results_font, font_size, set_wrap, target_field):
+    def plot_results(self, results_list, note, which_scroll, which_tab, results_font, font_size, set_wrap,
+                     target_field):
         self.clearLayout(which_tab)
         if results_list:
             for dindex, result in enumerate(results_list):
@@ -334,14 +437,16 @@ class Def_Updater(object):
                     wraped_ele = "\n".join(new_ele)
                     self.tab_res_button.setText(f"{wraped_ele}")
                     which_tab.addWidget(self.tab_res_button)
-                    self.tab_res_button.clicked.connect(lambda ch, element=element: self.update_note(note, element, target_field))
+                    self.tab_res_button.clicked.connect(
+                        lambda ch, element=element: self.update_note(note, element, target_field))
         else:
             self.tab_res_label = QtWidgets.QLabel(which_scroll)
             self.tab_res_label.setObjectName("label")
             self.tab_res_label.setText(f"No Results found!")
             which_tab.addWidget(self.tab_res_label)
 
-    def plot_results_gui(self, results_list, note, which_scroll, which_tab, results_font, font_size, set_wrap, target_field):
+    def plot_results_gui(self, results_list, note, which_scroll, which_tab, results_font, font_size, set_wrap,
+                         target_field):
         self.clearLayout(which_tab)
         if results_list:
             for dindex, result in enumerate(results_list):
@@ -357,7 +462,8 @@ class Def_Updater(object):
                     wraped_ele = "\n".join(new_ele)
                     self.tab_res_button.setText(f"{wraped_ele}")
                     which_tab.addWidget(self.tab_res_button)
-                    self.tab_res_button.clicked.connect(lambda ch, element=element: self.update_note_gui(note, element, target_field))
+                    self.tab_res_button.clicked.connect(
+                        lambda ch, element=element: self.update_note_gui(note, element, target_field))
         else:
             self.tab_res_label = QtWidgets.QLabel(which_scroll)
             self.tab_res_label.setObjectName("label")
@@ -402,11 +508,51 @@ class Def_Updater(object):
         mw.requireReset(reason=ResetReason.EditCurrentInit, context=self)
         mw.delayedMaybeReset()
 
+    def mecab_parse(self, sentence):
+        parsed = mecab_wrapper.getMorphemesMecab(sentence)
+        self.plot_parsed(parsed, self.scrollAreaWidgetContents_parser , self.verticalLayout_parser, self.results_font_jp,
+                         self.font_size_jp)
+        return parsed
+
+
+    def find_duplicates(self, text):
+        ids = mw.col.find_notes(f'"deck:{self.target_deck}"')
+        for id in ids:
+            note = mw.col.getNote(id)
+            if note[self.focus_field] == text:
+                return True
+
+
+    def plot_parsed(self, data, which_scroll, which_layout,  results_font, font_size):
+        self.clearLayout(which_layout)
+        if data:
+            for morpheme in data:
+                self.parse_res_button = QtWidgets.QPushButton(which_scroll)
+                self.parse_res_button.setObjectName("pushButton")
+                self.parse_res_button.setFont(QFont(results_font, font_size))
+                dupe = self.find_duplicates(morpheme.base)
+                if dupe:
+                    self.parse_res_button.setText(f"{morpheme.inflected} ({morpheme.base}) (Duplicate)")
+                else:
+                    self.parse_res_button.setText(f"{morpheme.inflected} ({morpheme.base})")
+                which_layout.addWidget(self.parse_res_button)
+                self.parse_res_button.clicked.connect(
+                    lambda ch, morpheme=morpheme: self.create_new_card(morpheme.base))
+        pass
+
+    def create_new_card(self, morph):
+
+        deck_id = mw.col.decks.id_for_name(self.target_deck)
+        new_note = mw.col.newNote()
+        mw.col.add_note(new_note, deck_id)
+        new_note['Focus'] = morph
+        new_note.flush()
+        self.run_clicked(self.fb_rbtn_last.isChecked(), self.fb_le_query.text())
 
 def window():
     mw.myWidget = AddonWindow = QtWidgets.QMainWindow()
     AddonWindow.setObjectName("Definition Updater")
-    ui = Def_Updater()
+    ui = Ui_AddonWindow()
     ui.setupUi(AddonWindow)
     AddonWindow.show()
 
