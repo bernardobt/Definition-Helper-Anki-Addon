@@ -286,7 +286,7 @@ class Ui_AddonWindow(object):
         self.parser_label_2.setText(_translate("AddonWindow", "Parse"))
         self.parser_pushbutton_2.setText(_translate("AddonWindow", "Parse"))
         self.tabWidget_menu.setTabText(self.tabWidget_menu.indexOf(self.tab_4), _translate("AddonWindow", "Parser"))
-        self.parser_text_2.setText("授業が月曜日から金曜日まであります。")
+        self.parser_text_2.setText("")
 
         # Settings
         self.tabWidget_menu.setTabText(self.tabWidget_menu.indexOf(self.tab_5), _translate("AddonWindow", "Settings"))
