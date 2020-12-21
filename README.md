@@ -5,22 +5,32 @@ It was designed around my own personal cards, so adjustments will most likely be
 
 In the __init__.py file, you'll find these variables:
 
-focus_field = 'Focus'  (this is the field the addon will read to use as base for the search)
+focus_field = ''  (this is the field the addon will read to use as base for the search)
 
-target_jp_field = 'Def Jp'  (this is the field in which the addon will write the japanese definition into)
+target_jp_field = ''  (this is the field in which the addon will write the japanese definition into)
 
-target_en_field = 'Def En'  (this is the field in which the addon will write the english definition into)
+target_en_field = ''  (this is the field in which the addon will write the english definition into)
 
-You can set them to fit your own cards. Remember to let the field name inside the single quotation makrs
+target_deck = ""  (this is the name of the deck it will add the cards from the parser function)
+    
+You can set them to fit your own cards. Remember to let the field name inside quotation makrs
 
 There are four areas in the addon. Fetch Options, Current, Results.
 
-In Fetch Options, you'll type a search filter (def. is "added:1" which will list all the new notes added today). When you press the button "Run" it will get the list of cards for that filter and get the last one in the list (which should be the newst added, with default settings). Then it will search the dictionaries and plot the results for you to click and it will add it to the card. 
+In the "Current" you find three lines. 
 
-In Current, you'll choose if you wish to overwrite the Target field or just add to whatever's already there. When you click "Get", the addon will get the info from the card that you are CURRENTLY viewing in the reviewer, and plot the definitions. Once you choose one, it'll recalculate the reviewer. Note that sometimes it will come back into a different card, but the changes will be applied correctly.
+The first one you'll choose if you wish to overwrite the Target field or just add to whatever's already there. When you click "Get", the addon will get the info from the card that you are CURRENTLY viewing in the reviewer, and plot the definitions. Once you choose one, it'll recalculate the reviewer. Note that sometimes it will come back into a different card, but the changes will be applied correctly.
 
-In regex you can choose to apply regular expression to the text from the definition when adding it to a card. The first field is for what you want to replace, and the second one for the replacement. The default settings searches for everything inside 「 」and removes it (replaces it with nothing). The reason for that is that personally I usually prefer not to have the sentence examples from the japanese dictionaries, since I already have example sentences in my cards.
+In the second one you'll type a search filter (def. is "added:1" which will list all the new notes added today). When you press the button "Run" it will get the list of cards for that filter and get the last one in the list (which should be the newst added, with default settings). Then it will search the dictionaries and plot the results for you to click and it will add it to the card. 
+
+The third one is Regex. You can choose to apply regular expression to the text from the definition when adding it to a card. The first field is for what you want to replace, and the second one for the replacement. The default settings searches for everything inside 「 」and removes it (replaces it with nothing). The reason for that is that personally I usually prefer not to have the sentence examples from the japanese dictionaries, since I already have example sentences in my cards.
 Remember if you want to use regex somethign else, you have to remember to use '\' before special characters like '('.
+
+The parse tab you will find an area to place a japanese text and click parse. It will parse the sentence into words and make a list of buttons that will add it as a new card into the deck configured "target_deck" variable. Once you add a word you'll also be present with its definitions for it.
+
+NOTE: For this parse function to work, you'll have to install the MeCab UniDic Japanese Dictionary (https://ankiweb.net/shared/info/13462835) addon. You can also follow https://www.reddit.com/r/LearnJapanese/comments/g8ngtm/how_did_you_guys_update_your_mecab_unidic/fovfet7/ to have a more updated version of it.
+
+NOTE 2: For the parse function I used some files from MorphMan Addon (https://ankiweb.net/shared/info/900801631) code (https://github.com/kaegi/MorphMan). Very useful addon, that I personally used for a long time.
 
 In Results, you see three tabs in which the results for each dictionary will be ploted.
 
@@ -36,8 +46,10 @@ You should than be good to go.
 
 When in anki, go to TOOLS, and there should be a new option "Definition Updater". Just click it and the window will open.
 
-Note that it is basically a personal project, by someone who is not particularly good at coding. It can give some errors if you missuse the addon (like using a non valid filter in the Fetch setting) but it shouldn't cause any harm in your anki. Don't expect consistent (if any) updates or proper support. I'll try to help if you find any problems or any suggestions if I have the time.
+Note that it is basically a personal project, by someone who is not particularly good at coding. It can give some errors if you missuse the addon (like using an invalid filter in the Fetch setting) but it shouldn't cause any harm in your anki. Don't expect consistent (if any) updates or proper support. I'll try to help if you find any problems or any suggestions if I have the time.
 
 If you actually want to use it, remember it is provided "As is", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement. In no event shall the authors or copyright holders be liable for any claim, damages or other liability, whether in an action of contract, tort or otherwise, arising from, out of or in connection with the software or the use or other dealings in the software.
 
-To install, copy the Definition folder into your anki2\addons21 folder (you can go in anki -> tools -> add-ons -> view files), make necessary changes in __init.py__ with any text editor and restart anki.
+To install, copy the DefinitionHelper folder into your anki2\addons21 folder (you can go in anki -> tools -> add-ons -> view files), make necessary changes in __init.py__ with any text editor and restart anki.
+
+
