@@ -41,9 +41,6 @@ class Ui_AddonWindow(QDialog):
                  dict_folder_path + dict_3,
                  dict_folder_path + dict_4]
 
-    monitor_state = False
-
-    # stop_signal = pyqtSignal()
 
 
     def setupUi(self, AddonWindow):
@@ -101,9 +98,6 @@ class Ui_AddonWindow(QDialog):
         self.fb_rbtn_last.setChecked(True)
         self.fb_rbtn_last.setObjectName("fb_rbtn_last")
         self.fetch_box_h_layout.addWidget(self.fb_rbtn_last)
-        # self.fb_rbtn_loop = QtWidgets.QRadioButton(self.horizontalLayoutWidget)
-        # self.fb_rbtn_loop.setObjectName("fb_rbtn_loop")
-        # self.fetch_box_h_layout.addWidget(self.fb_rbtn_loop)
         self.fb_le_query = QtWidgets.QLineEdit(self.horizontalLayoutWidget)
         self.fb_le_query.setObjectName("fb_le_query")
         self.fetch_box_h_layout.addWidget(self.fb_le_query)
@@ -146,11 +140,12 @@ class Ui_AddonWindow(QDialog):
         self.horizontalLayout_4.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_4.setObjectName("horizontalLayout_4")
 
-        self.parser_chkbtn_2 = QtWidgets.QCheckBox(self.horizontalLayoutWidget_6)
-        self.parser_chkbtn_2.setObjectName("parser_chkbtn_2")
-        self.parser_chkbtn_2.toggled.connect(self.on_check_cb_funtion_toggled)
+        # # CheckBox
+        # self.parser_chkbtn_2 = QtWidgets.QCheckBox(self.horizontalLayoutWidget_6)
+        # self.parser_chkbtn_2.setObjectName("parser_chkbtn_2")
+        # self.parser_chkbtn_2.toggled.connect(self.on_check_cb_funtion_toggled)
+        # self.horizontalLayout_4.addWidget(self.parser_chkbtn_2)
 
-        self.horizontalLayout_4.addWidget(self.parser_chkbtn_2)
         self.parser_text_2 = QtWidgets.QLineEdit(self.horizontalLayoutWidget_6)
         self.parser_text_2.setObjectName("parser_text_2")
         self.horizontalLayout_4.addWidget(self.parser_text_2)
@@ -179,17 +174,20 @@ class Ui_AddonWindow(QDialog):
         self.parser_pushbutton_2.clicked.connect(lambda: self.mecab_parse(self.parser_text_2.text()))
         self.parser_pushbutton_3.clicked.connect(lambda: self.copy_clipboard())
 
-        # Clipboard
-        self.tab_3 = QtWidgets.QWidget()
-        self.tab_3.setObjectName("tab_3")
-
-        self.plainTextEdit = QtWidgets.QPlainTextEdit(self.tab_3)
-        self.plainTextEdit.setGeometry(QtCore.QRect(0, 0, 359, 202))
-        self.plainTextEdit.setObjectName("plainTextEdit")
-
-        self.plainTextEdit.setFont(QFont(self.results_font_jp, self.font_size_jp))
-        
-        self.tabWidget_menu.addTab(self.tab_3, "")
+        # # Clipboard
+        # self.tab_3 = QtWidgets.QWidget()
+        # self.tab_3.setObjectName("tab_3")
+        #
+        # self.plainTextEdit = QtWidgets.QPlainTextEdit(self.tab_3)
+        # self.plainTextEdit.setGeometry(QtCore.QRect(0, 0, 359, 202))
+        # self.plainTextEdit.setObjectName("plainTextEdit")
+        #
+        # self.plainTextEdit.setFont(QFont(self.results_font_jp, self.font_size_jp))
+        #
+        # self.tabWidget_menu.addTab(self.tab_3, "")
+        #
+        # # self.monitor_clipboard()
+        # # self.cb_monitor = clip_monitor()
 
         # tab 4
         self.tab_4 = QtWidgets.QWidget()
@@ -304,14 +302,14 @@ class Ui_AddonWindow(QDialog):
         self.regex_text_replace.setText(_translate("MainWindow", ""))
 
         # Parser
-        self.parser_chkbtn_2.setText(_translate("AddonWindow", "Monitor"))
+        # self.parser_chkbtn_2.setText(_translate("AddonWindow", "Monitor"))
         self.parser_pushbutton_2.setText(_translate("AddonWindow", "Parse"))
         self.parser_pushbutton_3.setText(_translate("AddonWindow", "Get Clipboard"))
         self.tabWidget_menu.setTabText(self.tabWidget_menu.indexOf(self.tab_2), _translate("AddonWindow", "Parser"))
         self.parser_text_2.setText("")
 
         # Clipboard
-        self.tabWidget_menu.setTabText(self.tabWidget_menu.indexOf(self.tab_3), _translate("AddonWindow", "Clipboard"))
+        # self.tabWidget_menu.setTabText(self.tabWidget_menu.indexOf(self.tab_3), _translate("AddonWindow", "Clipboard"))
 
         # Settings
         self.tabWidget_menu.setTabText(self.tabWidget_menu.indexOf(self.tab_5), _translate("AddonWindow", "Settings"))
@@ -398,7 +396,6 @@ class Ui_AddonWindow(QDialog):
                         sp_tag_str = entry[7].split(' ')
                         new_sp_tags = self.jmedict_tag_handler(sp_tag_str, list_entries[1])
                         temp.append(new_sp_tags)
-
                     result.append(temp)
 
         return result
@@ -542,12 +539,15 @@ class Ui_AddonWindow(QDialog):
                          self.font_size_jp)
         return parsed
 
+
     def find_duplicates(self, text):
         ids = mw.col.find_notes(f'"deck:{self.target_deck}"')
+        # showInfo(f"ids: {len(ids)}")
         for id in ids:
             note = mw.col.getNote(id)
             if note[self.focus_field] == text:
                 return True
+
 
     def plot_parsed(self, data, which_scroll, which_layout,  results_font, font_size):
         self.clearLayout(which_layout)
@@ -591,9 +591,17 @@ class Ui_AddonWindow(QDialog):
 
     def on_check_cb_funtion_toggled(self):
         if self.parser_chkbtn_2.isChecked():
-            self.monitor_clipboard()
+            self.cb_monitor = clip_monitor()
+            self.cb_monitor.start()
+            self.cb_monitor.finished.connect(self.evt_mon_finished)
+            self.cb_monitor.update_clipboard.connect(self.cb_mon_update_progress)
         else:
-            pass
+
+            self.cb_monitor.mon_stop()
+
+    def evt_mon_finished(self):
+        showInfo("Finished")
+
 
 class clip_monitor(QThread):
     continue_run = True
@@ -607,7 +615,7 @@ class clip_monitor(QThread):
             self.update_clipboard.emit(new_text)
         self.finished.emit()
 
-    def stop(self):
+    def mon_stop(self):
         self.continue_run = False
 
 
