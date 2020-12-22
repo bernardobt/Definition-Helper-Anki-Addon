@@ -9,15 +9,18 @@ from textwrap import wrap
 from PyQt5 import QtCore, QtWidgets
 from aqt.main import ResetReason
 
+from . import Pyperclip
+
 from . import mecab_wrapper
 
-class Ui_AddonWindow(object):
 
+
+class Ui_AddonWindow(QDialog):
     # Config Setup
-    focus_field = ''
-    target_jp_field = ''
-    target_en_field = ''
-    target_deck = ""
+    focus_field = 'Focus'
+    target_jp_field = 'Def Jp'
+    target_en_field = 'Def En'
+    target_deck = "6 - Mining deck"
 
     results_font_jp = "Meiryo"
     font_size_jp = 10
@@ -27,16 +30,20 @@ class Ui_AddonWindow(object):
     font_size_en = 10
     set_wrap_en = 40
 
-    dict_1 = ""
-    dict_2 = ""
-    dict_3 = ""
-    dict_4 = ""
+    dict_1 = "大辞林"
+    dict_2 = "広辞苑"
+    dict_3 = "新明解"
+    dict_4 = "jmdict_english"
 
-    dict_folder_path = ""
+    dict_folder_path = "D:\\Python\\MineHelper\\Dictionaries\\"
     dict_path = [dict_folder_path + dict_1,
                  dict_folder_path + dict_2,
                  dict_folder_path + dict_3,
                  dict_folder_path + dict_4]
+
+    monitor_state = False
+
+    # stop_signal = pyqtSignal()
 
 
     def setupUi(self, AddonWindow):
@@ -94,6 +101,9 @@ class Ui_AddonWindow(object):
         self.fb_rbtn_last.setChecked(True)
         self.fb_rbtn_last.setObjectName("fb_rbtn_last")
         self.fetch_box_h_layout.addWidget(self.fb_rbtn_last)
+        # self.fb_rbtn_loop = QtWidgets.QRadioButton(self.horizontalLayoutWidget)
+        # self.fb_rbtn_loop.setObjectName("fb_rbtn_loop")
+        # self.fetch_box_h_layout.addWidget(self.fb_rbtn_loop)
         self.fb_le_query = QtWidgets.QLineEdit(self.horizontalLayoutWidget)
         self.fb_le_query.setObjectName("fb_le_query")
         self.fetch_box_h_layout.addWidget(self.fb_le_query)
@@ -125,59 +135,72 @@ class Ui_AddonWindow(object):
         self.regex_text_replace.setObjectName("regex_text_replace")
         self.regex_box_h_layout.addWidget(self.regex_text_replace)
 
-        #tab 2
+        # Parser
         self.tab_2 = QtWidgets.QWidget()
         self.tab_2.setObjectName("tab_2")
-        # self.tabWidget_menu.addTab(self.tab_2, "")
 
-        # Tab 3
-        self.tab_3 = QtWidgets.QWidget()
-        self.tab_3.setObjectName("tab_3")
-        # self.tabWidget_menu.addTab(self.tab_3, "")
-
-        # Parser
-        self.tab_4 = QtWidgets.QWidget()
-        self.tab_4.setObjectName("tab_4")
-
-        self.horizontalLayoutWidget_6 = QtWidgets.QWidget(self.tab_4)
+        self.horizontalLayoutWidget_6 = QtWidgets.QWidget(self.tab_2)
         self.horizontalLayoutWidget_6.setGeometry(QtCore.QRect(10, 10, 330, 30))
         self.horizontalLayoutWidget_6.setObjectName("horizontalLayoutWidget_6")
         self.horizontalLayout_4 = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget_6)
         self.horizontalLayout_4.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_4.setObjectName("horizontalLayout_4")
-        self.parser_label_2 = QtWidgets.QLabel(self.horizontalLayoutWidget_6)
-        self.parser_label_2.setMinimumSize(QtCore.QSize(45, 30))
-        self.parser_label_2.setLayoutDirection(QtCore.Qt.LeftToRight)
-        self.parser_label_2.setAlignment(QtCore.Qt.AlignCenter)
-        self.parser_label_2.setObjectName("parser_label_2")
-        self.horizontalLayout_4.addWidget(self.parser_label_2)
+
+        self.parser_chkbtn_2 = QtWidgets.QCheckBox(self.horizontalLayoutWidget_6)
+        self.parser_chkbtn_2.setObjectName("parser_chkbtn_2")
+        self.parser_chkbtn_2.toggled.connect(self.on_check_cb_funtion_toggled)
+
+        self.horizontalLayout_4.addWidget(self.parser_chkbtn_2)
         self.parser_text_2 = QtWidgets.QLineEdit(self.horizontalLayoutWidget_6)
         self.parser_text_2.setObjectName("parser_text_2")
         self.horizontalLayout_4.addWidget(self.parser_text_2)
         self.parser_pushbutton_2 = QtWidgets.QPushButton(self.horizontalLayoutWidget_6)
         self.parser_pushbutton_2.setObjectName("parser_pushbutton_2")
         self.horizontalLayout_4.addWidget(self.parser_pushbutton_2)
+        self.parser_pushbutton_3 = QtWidgets.QPushButton(self.horizontalLayoutWidget_6)
+        self.parser_pushbutton_3.setObjectName("parser_pushbutton_3")
+        self.horizontalLayout_4.addWidget(self.parser_pushbutton_3)
 
-        self.parser_tab_scroll_area_2 = QtWidgets.QScrollArea(self.tab_4)
+        self.parser_tab_scroll_area_2 = QtWidgets.QScrollArea(self.tab_2)
         self.parser_tab_scroll_area_2.setGeometry(QtCore.QRect(5, 40, 350, 160))
         self.parser_tab_scroll_area_2.setWidgetResizable(True)
         self.parser_tab_scroll_area_2.setObjectName("parser_tab_scroll_area_2")
 
         self.scrollAreaWidgetContents_parser = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents_parser.setGeometry(QtCore.QRect(1, 1, 350, 160))
+        self.scrollAreaWidgetContents_parser.setGeometry(QtCore.QRect(1, 1, 348, 158))
         self.scrollAreaWidgetContents_parser.setObjectName("scrollAreaWidgetContents_parser")
 
         self.verticalLayout_parser = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents_parser)
         self.verticalLayout_parser.setObjectName("verticalLayoutWidget_4")
         self.parser_tab_scroll_area_2.setWidget(self.scrollAreaWidgetContents_parser)
 
-        self.tabWidget_menu.addTab(self.tab_4, "")
+        self.tabWidget_menu.addTab(self.tab_2, "")
 
         self.parser_pushbutton_2.clicked.connect(lambda: self.mecab_parse(self.parser_text_2.text()))
+        self.parser_pushbutton_3.clicked.connect(lambda: self.copy_clipboard())
+
+        # Clipboard
+        self.tab_3 = QtWidgets.QWidget()
+        self.tab_3.setObjectName("tab_3")
+
+        self.plainTextEdit = QtWidgets.QPlainTextEdit(self.tab_3)
+        self.plainTextEdit.setGeometry(QtCore.QRect(0, 0, 359, 202))
+        self.plainTextEdit.setObjectName("plainTextEdit")
+
+        self.plainTextEdit.setFont(QFont(self.results_font_jp, self.font_size_jp))
+        
+        self.tabWidget_menu.addTab(self.tab_3, "")
+
+        # tab 4
+        self.tab_4 = QtWidgets.QWidget()
+        self.tab_4.setObjectName("tab_4")
+        # self.tabWidget_menu.addTab(self.tab_4, "")
+
 
         # Settings
         self.tab_5 = QtWidgets.QWidget()
         self.tab_5.setObjectName("tab_5")
+        # self.tabWidget_menu.addTab(self.tab_5, "")
 
         # Results Box
         self.results_box = QtWidgets.QGroupBox(self.centralwidget)
@@ -187,7 +210,7 @@ class Ui_AddonWindow(object):
         self.dict_tabs.setGeometry(QtCore.QRect(10, 20, 340, 420))
         self.dict_tabs.setObjectName("dict_tabs")
 
-        # tab 1
+        # tab dict 1
         self.res_tab_1 = QtWidgets.QWidget()
         self.res_tab_1.setObjectName("res_tab_1")
         self.dict_1_tab_scroll_area = QtWidgets.QScrollArea(self.res_tab_1)
@@ -202,7 +225,7 @@ class Ui_AddonWindow(object):
         self.dict_1_tab_scroll_area.setWidget(self.scrollAreaWidgetContents)
         self.dict_tabs.addTab(self.res_tab_1, "")
 
-        # tab 2
+        # tab dict 2
         self.res_tab_2 = QtWidgets.QWidget()
         self.res_tab_2.setObjectName("res_tab_2")
         self.dict_2_tab_scroll_area = QtWidgets.QScrollArea(self.res_tab_2)
@@ -217,7 +240,7 @@ class Ui_AddonWindow(object):
         self.dict_2_tab_scroll_area.setWidget(self.scrollAreaWidgetContents_2)
         self.dict_tabs.addTab(self.res_tab_2, "")
 
-        # tab 3
+        # tab dict 3
         self.res_tab_3 = QtWidgets.QWidget()
         self.res_tab_3.setObjectName("res_tab_3")
         self.dict_3_tab_scroll_area = QtWidgets.QScrollArea(self.res_tab_3)
@@ -232,7 +255,7 @@ class Ui_AddonWindow(object):
         self.dict_3_tab_scroll_area.setWidget(self.scrollAreaWidgetContents_3)
         self.dict_tabs.addTab(self.res_tab_3, "")
 
-        # tab 4
+        # tab dict 4
         self.res_tab_4 = QtWidgets.QWidget()
         self.res_tab_4.setObjectName("res_tab_4")
         self.dict_4_tab_scroll_area = QtWidgets.QScrollArea(self.res_tab_4)
@@ -267,13 +290,11 @@ class Ui_AddonWindow(object):
         self.results_box.setTitle(_translate("AddonWindow", "Results"))
 
         # Fetch last
-        self.tabWidget_menu.setTabText(self.tabWidget_menu.indexOf(self.tab_2), _translate("AddonWindow", "Most Recent"))
         self.fb_rbtn_last.setText(_translate("AddonWindow", "Last"))
         self.fb_le_query.setText(_translate("AddonWindow", "added:1"))
         self.fb_btn_run.setText(_translate("AddonWindow", "Run"))
 
         # Regex
-        self.tabWidget_menu.setTabText(self.tabWidget_menu.indexOf(self.tab_3), _translate("AddonWindow", "Regex"))
         self.regex_apply_rbtn.setText(_translate("AddonWindow", "Apply"))
         self.regex_ignore_rbtn.setText(_translate("AddonWindow", "Ignore"))
         self.regex_text.setText(_translate("AddonWindow", "regex"))
@@ -283,10 +304,14 @@ class Ui_AddonWindow(object):
         self.regex_text_replace.setText(_translate("MainWindow", ""))
 
         # Parser
-        self.parser_label_2.setText(_translate("AddonWindow", "Parse"))
+        self.parser_chkbtn_2.setText(_translate("AddonWindow", "Monitor"))
         self.parser_pushbutton_2.setText(_translate("AddonWindow", "Parse"))
-        self.tabWidget_menu.setTabText(self.tabWidget_menu.indexOf(self.tab_4), _translate("AddonWindow", "Parser"))
+        self.parser_pushbutton_3.setText(_translate("AddonWindow", "Get Clipboard"))
+        self.tabWidget_menu.setTabText(self.tabWidget_menu.indexOf(self.tab_2), _translate("AddonWindow", "Parser"))
         self.parser_text_2.setText("")
+
+        # Clipboard
+        self.tabWidget_menu.setTabText(self.tabWidget_menu.indexOf(self.tab_3), _translate("AddonWindow", "Clipboard"))
 
         # Settings
         self.tabWidget_menu.setTabText(self.tabWidget_menu.indexOf(self.tab_5), _translate("AddonWindow", "Settings"))
@@ -297,6 +322,7 @@ class Ui_AddonWindow(object):
         self.dict_tabs.setTabText(self.dict_tabs.indexOf(self.res_tab_2), _translate("AddonWindow", self.dict_2))
         self.dict_tabs.setTabText(self.dict_tabs.indexOf(self.res_tab_3), _translate("AddonWindow", self.dict_3))
         self.dict_tabs.setTabText(self.dict_tabs.indexOf(self.res_tab_4), _translate("AddonWindow", self.dict_4))
+
 
     def run_clicked(self, chk, qry_txt):
         if chk:
@@ -372,7 +398,9 @@ class Ui_AddonWindow(object):
                         sp_tag_str = entry[7].split(' ')
                         new_sp_tags = self.jmedict_tag_handler(sp_tag_str, list_entries[1])
                         temp.append(new_sp_tags)
+
                     result.append(temp)
+
         return result
 
     def jmedict_tag_handler(self, to_handle_list, tag_bank):
@@ -474,7 +502,7 @@ class Ui_AddonWindow(object):
         if self.curr_disp_overwrite.isChecked():
             if self.regex_apply_rbtn.isChecked():
                 regex_content = re.sub(f"{self.regex_text.text()}", f"{self.regex_text_replace.text()}", content)
-                note_id[self.target_jp_field] = regex_content
+                note_id[target_field] = regex_content
                 note_id.flush()
             else:
                 note_id[self.target_jp_field] = content
@@ -514,14 +542,12 @@ class Ui_AddonWindow(object):
                          self.font_size_jp)
         return parsed
 
-
     def find_duplicates(self, text):
         ids = mw.col.find_notes(f'"deck:{self.target_deck}"')
         for id in ids:
             note = mw.col.getNote(id)
             if note[self.focus_field] == text:
                 return True
-
 
     def plot_parsed(self, data, which_scroll, which_layout,  results_font, font_size):
         self.clearLayout(which_layout)
@@ -541,13 +567,49 @@ class Ui_AddonWindow(object):
         pass
 
     def create_new_card(self, morph):
-
         deck_id = mw.col.decks.id_for_name(self.target_deck)
         new_note = mw.col.newNote()
         mw.col.add_note(new_note, deck_id)
         new_note['Focus'] = morph
         new_note.flush()
         self.run_clicked(self.fb_rbtn_last.isChecked(), self.fb_le_query.text())
+        mw.requireReset(reason=ResetReason.EditCurrentInit, context=self)
+        mw.delayedMaybeReset()
+
+    def copy_clipboard(self):
+        cilp_text = Pyperclip.paste()
+        self.parser_text_2.setText(cilp_text)
+
+    def monitor_clipboard(self):
+        self.cb_monitor = clip_monitor()
+        self.cb_monitor.start()
+        self.cb_monitor.update_clipboard.connect(self.cb_mon_update_progress)
+
+
+    def cb_mon_update_progress(self, val):
+        self.plainTextEdit.appendPlainText(f"{val}")
+
+    def on_check_cb_funtion_toggled(self):
+        if self.parser_chkbtn_2.isChecked():
+            self.monitor_clipboard()
+        else:
+            pass
+
+class clip_monitor(QThread):
+    continue_run = True
+    update_clipboard = pyqtSignal(str)
+
+    finished = pyqtSignal()
+
+    def run(self):
+        while self.continue_run:
+            new_text = Pyperclip.waitForNewPaste()
+            self.update_clipboard.emit(new_text)
+        self.finished.emit()
+
+    def stop(self):
+        self.continue_run = False
+
 
 def window():
     mw.myWidget = AddonWindow = QtWidgets.QMainWindow()
