@@ -32,6 +32,10 @@ NOTE: For this parse function to work, you'll have to install the MeCab UniDic J
 
 NOTE 2: For the parse function I used some files from MorphMan Addon (https://ankiweb.net/shared/info/900801631) code (https://github.com/kaegi/MorphMan). Very useful addon, that I personally used for a long time.
 
+The Clipboard tab you'll find a clipboard monitor, adds what you have on clip board in there. Currently it can't be deactivated, unfortunately.
+
+NOTE: Pyperclip (https://pypi.org/project/pyperclip/) was used to make the clipboard functions.
+
 In Results, you see three tabs in which the results for each dictionary will be ploted.
 
 NOTE: The Dictionary files are NOT provided, you'll have to set them manually. (As of 12/06/2020, added support to the JMEdict)
