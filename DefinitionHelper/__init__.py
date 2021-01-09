@@ -9,6 +9,8 @@ from textwrap import wrap
 from PyQt5 import QtCore, QtWidgets
 from aqt.main import ResetReason
 
+import csv
+
 from . import Pyperclip
 
 from . import mecab_wrapper
@@ -21,6 +23,9 @@ class Ui_AddonWindow(QDialog):
     target_jp_field = 'Def Jp'
     target_en_field = 'Def En'
     target_deck = "6 - Mining deck"
+    target_pitch_field = "Pitch Accent"
+    target_rtk_field = "Focus RTK Keywords"
+    target_readingfocus_field = "Reading Focus"
 
     results_font_jp = "Meiryo"
     font_size_jp = 10
@@ -34,13 +39,19 @@ class Ui_AddonWindow(QDialog):
     dict_2 = "広辞苑"
     dict_3 = "新明解"
     dict_4 = "jmdict_english"
-
-    dict_folder_path = "D:\\Python\\MineHelper\\Dictionaries\\"
+    
+    # Dictionaries folder location
+    dict_folder_path = ""
     dict_path = [dict_folder_path + dict_1,
                  dict_folder_path + dict_2,
                  dict_folder_path + dict_3,
                  dict_folder_path + dict_4]
 
+    # Pitch accent data location
+    accent_list_tsv = ""
+
+    # RTK Keyword list
+    rtk_list_csv = ""
 
 
     def setupUi(self, AddonWindow):
@@ -140,12 +151,6 @@ class Ui_AddonWindow(QDialog):
         self.horizontalLayout_4.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_4.setObjectName("horizontalLayout_4")
 
-        # # CheckBox
-        # self.parser_chkbtn_2 = QtWidgets.QCheckBox(self.horizontalLayoutWidget_6)
-        # self.parser_chkbtn_2.setObjectName("parser_chkbtn_2")
-        # self.parser_chkbtn_2.toggled.connect(self.on_check_cb_funtion_toggled)
-        # self.horizontalLayout_4.addWidget(self.parser_chkbtn_2)
-
         self.parser_text_2 = QtWidgets.QLineEdit(self.horizontalLayoutWidget_6)
         self.parser_text_2.setObjectName("parser_text_2")
         self.horizontalLayout_4.addWidget(self.parser_text_2)
@@ -174,30 +179,20 @@ class Ui_AddonWindow(QDialog):
         self.parser_pushbutton_2.clicked.connect(lambda: self.mecab_parse(self.parser_text_2.text()))
         self.parser_pushbutton_3.clicked.connect(lambda: self.copy_clipboard())
 
-        # # Clipboard
+        # tab 3
         # self.tab_3 = QtWidgets.QWidget()
         # self.tab_3.setObjectName("tab_3")
-        #
-        # self.plainTextEdit = QtWidgets.QPlainTextEdit(self.tab_3)
-        # self.plainTextEdit.setGeometry(QtCore.QRect(0, 0, 359, 202))
-        # self.plainTextEdit.setObjectName("plainTextEdit")
-        #
-        # self.plainTextEdit.setFont(QFont(self.results_font_jp, self.font_size_jp))
-        #
         # self.tabWidget_menu.addTab(self.tab_3, "")
-        #
-        # # self.monitor_clipboard()
-        # # self.cb_monitor = clip_monitor()
 
         # tab 4
-        self.tab_4 = QtWidgets.QWidget()
-        self.tab_4.setObjectName("tab_4")
+        # self.tab_4 = QtWidgets.QWidget()
+        # self.tab_4.setObjectName("tab_4")
         # self.tabWidget_menu.addTab(self.tab_4, "")
 
 
-        # Settings
-        self.tab_5 = QtWidgets.QWidget()
-        self.tab_5.setObjectName("tab_5")
+        # tab 5
+        # self.tab_5 = QtWidgets.QWidget()
+        # self.tab_5.setObjectName("tab_5")
         # self.tabWidget_menu.addTab(self.tab_5, "")
 
         # Results Box
@@ -268,7 +263,24 @@ class Ui_AddonWindow(QDialog):
         self.dict_4_tab_scroll_area.setWidget(self.scrollAreaWidgetContents_4)
         self.dict_tabs.addTab(self.res_tab_4, "")
 
+        # tab util
+        self.res_tab_5 = QtWidgets.QWidget()
+        self.res_tab_5.setObjectName("res_tab_5")
+        self.dict_5_tab_scroll_area = QtWidgets.QScrollArea(self.res_tab_5)
+        self.dict_5_tab_scroll_area.setGeometry(QtCore.QRect(5, 5, 325, 380))
+        self.dict_5_tab_scroll_area.setWidgetResizable(True)
+        self.dict_5_tab_scroll_area.setObjectName("dict_5_tab_scroll_area")
+        self.scrollAreaWidgetContents_5 = QtWidgets.QWidget()
+        self.scrollAreaWidgetContents_5.setGeometry(QtCore.QRect(1, 1, 323, 378))
+        self.scrollAreaWidgetContents_5.setObjectName("scrollAreaWidgetContents_5")
+        self.verticalLayout_5 = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents_5)
+        self.verticalLayout_5.setObjectName("verticalLayout_5")
+        self.dict_5_tab_scroll_area.setWidget(self.scrollAreaWidgetContents_5)
+        self.dict_tabs.addTab(self.res_tab_5, "")
+
+
         AddonWindow.setCentralWidget(self.centralwidget)
+
 
         self.retranslateUi(AddonWindow)
         self.tabWidget_menu.setCurrentIndex(0)
@@ -277,7 +289,7 @@ class Ui_AddonWindow(QDialog):
 
     def retranslateUi(self, AddonWindow):
         _translate = QtCore.QCoreApplication.translate
-        AddonWindow.setWindowTitle(_translate("AddonWindow", "Definition Aid"))
+        AddonWindow.setWindowTitle(_translate("AddonWindow", "Definition Helper"))
 
         # Current
         self.tabWidget_menu.setTabText(self.tabWidget_menu.indexOf(self.tab), _translate("AddonWindow", "Current"))
@@ -302,7 +314,6 @@ class Ui_AddonWindow(QDialog):
         self.regex_text_replace.setText(_translate("MainWindow", ""))
 
         # Parser
-        # self.parser_chkbtn_2.setText(_translate("AddonWindow", "Monitor"))
         self.parser_pushbutton_2.setText(_translate("AddonWindow", "Parse"))
         self.parser_pushbutton_3.setText(_translate("AddonWindow", "Get Clipboard"))
         self.tabWidget_menu.setTabText(self.tabWidget_menu.indexOf(self.tab_2), _translate("AddonWindow", "Parser"))
@@ -312,7 +323,7 @@ class Ui_AddonWindow(QDialog):
         # self.tabWidget_menu.setTabText(self.tabWidget_menu.indexOf(self.tab_3), _translate("AddonWindow", "Clipboard"))
 
         # Settings
-        self.tabWidget_menu.setTabText(self.tabWidget_menu.indexOf(self.tab_5), _translate("AddonWindow", "Settings"))
+        # self.tabWidget_menu.setTabText(self.tabWidget_menu.indexOf(self.tab_5), _translate("AddonWindow", "Settings"))
 
         # Results Box
         self.results_box.setTitle(_translate("AddonWindow", "Results"))
@@ -320,6 +331,7 @@ class Ui_AddonWindow(QDialog):
         self.dict_tabs.setTabText(self.dict_tabs.indexOf(self.res_tab_2), _translate("AddonWindow", self.dict_2))
         self.dict_tabs.setTabText(self.dict_tabs.indexOf(self.res_tab_3), _translate("AddonWindow", self.dict_3))
         self.dict_tabs.setTabText(self.dict_tabs.indexOf(self.res_tab_4), _translate("AddonWindow", self.dict_4))
+        self.dict_tabs.setTabText(self.dict_tabs.indexOf(self.res_tab_5), _translate("AddonWindow", "Utils"))
 
 
     def run_clicked(self, chk, qry_txt):
@@ -329,22 +341,27 @@ class Ui_AddonWindow(QDialog):
             showInfo(f"Extra is selected\nQuery: '{qry_txt}'\n\nNo function yet :(")
 
     def get_current_gui(self, dict_list):
-        tab = [self.verticalLayout, self.verticalLayout_2, self.verticalLayout_3, self.verticalLayout_4]
+        tab = [self.verticalLayout, self.verticalLayout_2, self.verticalLayout_3, self.verticalLayout_4, self.verticalLayout_5]
         scroll_area = [self.scrollAreaWidgetContents, self.scrollAreaWidgetContents_2, self.scrollAreaWidgetContents_3,
-                       self.scrollAreaWidgetContents_4]
+                       self.scrollAreaWidgetContents_4, self.scrollAreaWidgetContents_5]
         rev = mw.reviewer.card
         nid = rev.nid
         note = mw.col.getNote(nid)
         self.curr_dis_textbox.setText(f"{note[self.focus_field]}")
+        # Plots the dictionary tabs
         for i, dict in enumerate(dict_list):
-            if i != 3:
-                result = self.query_dict(dict, note[self.focus_field])
-                self.plot_results_gui(result, note, scroll_area[i], tab[i], self.results_font_jp, self.font_size_jp,
-                                      self.set_wrap_jp, self.target_jp_field)
-            else:
+            if i == 3:
                 result = self.jmedict_query_dict(dict, note[self.focus_field])
                 self.plot_results_gui(result, note, scroll_area[i], tab[i], self.results_font_en, self.font_size_en,
                                       self.set_wrap_en, self.target_en_field)
+            else:
+                result = self.query_dict(dict, note[self.focus_field])
+                self.plot_results_gui(result, note, scroll_area[i], tab[i], self.results_font_jp, self.font_size_jp,
+                                      self.set_wrap_jp, self.target_jp_field)
+        # Plot the utils tab
+        self.plot_utils(self.scrollAreaWidgetContents_5 , self.verticalLayout_5, self.results_font_jp,
+                         self.font_size_jp, nid)
+
 
     def get_query_last(self, query_filter, dict_list):
         tab = [self.verticalLayout, self.verticalLayout_2, self.verticalLayout_3, self.verticalLayout_4]
@@ -495,6 +512,7 @@ class Ui_AddonWindow(QDialog):
             self.tab_res_label.setText(f"No Results found!")
             which_tab.addWidget(self.tab_res_label)
 
+
     def update_note(self, note_id, content, target_field):
         if self.curr_disp_overwrite.isChecked():
             if self.regex_apply_rbtn.isChecked():
@@ -533,6 +551,16 @@ class Ui_AddonWindow(QDialog):
         mw.requireReset(reason=ResetReason.EditCurrentInit, context=self)
         mw.delayedMaybeReset()
 
+    def update_utils_gui(self, nid, reading, pitch, keywords, target_reading, target_pitch, target_keywords):
+        note = mw.col.getNote(nid)
+        if self.curr_disp_overwrite.isChecked():
+            note[target_reading] = reading
+            note[target_pitch] = pitch
+            note[target_keywords] = keywords
+            note.flush()
+        mw.requireReset(reason=ResetReason.EditCurrentInit, context=self)
+        mw.delayedMaybeReset()
+
     def mecab_parse(self, sentence):
         parsed = mecab_wrapper.getMorphemesMecab(sentence)
         self.plot_parsed(parsed, self.scrollAreaWidgetContents_parser , self.verticalLayout_parser, self.results_font_jp,
@@ -542,7 +570,6 @@ class Ui_AddonWindow(QDialog):
 
     def find_duplicates(self, text):
         ids = mw.col.find_notes(f'"deck:{self.target_deck}"')
-        # showInfo(f"ids: {len(ids)}")
         for id in ids:
             note = mw.col.getNote(id)
             if note[self.focus_field] == text:
@@ -564,7 +591,38 @@ class Ui_AddonWindow(QDialog):
                 which_layout.addWidget(self.parse_res_button)
                 self.parse_res_button.clicked.connect(
                     lambda ch, morpheme=morpheme: self.create_new_card(morpheme.base))
-        pass
+
+
+    def plot_utils(self, which_scroll, which_layout,  results_font, font_size, note_id):
+        self.clearLayout(which_layout)
+        note = mw.col.getNote(note_id)
+        word_list = self.find_words(note[self.focus_field])
+        pitch_res = self.search_pitch(word_list)
+        for result in pitch_res:
+            keywords_res = self.query_rtk_list(note[self.focus_field])
+            pitch_string = "・".join(result[3])
+            self.parse_res_button = QtWidgets.QPushButton(which_scroll)
+            self.parse_res_button.setObjectName("pushButton")
+            self.parse_res_button.setFont(QFont(results_font, font_size))
+            self.parse_res_button.setText(f"{result[0]}\n"
+                                          f"Reading: {result[1]}\n"
+                                          f"Pitch Accent: {result[2]}")
+
+            which_layout.addWidget(self.parse_res_button)
+            self.parse_res_button.clicked.connect(
+                lambda ch, result=result, pitch_string=pitch_string : self.update_utils_gui(note_id, result[1], pitch_string,
+                                                                    keywords_res, self.target_readingfocus_field,
+                                                                    self.target_pitch_field, self.target_rtk_field))
+
+
+    # # thanks to http://olsgaard.dk/hiragana-katakana-transliteration-in-4-lines-of-python.html
+    # def kana_convert(self, text):
+    #     katakana_chart = "ァアィイゥウェエォオカガキギクグケゲコゴサザシジスズセゼソゾタダチヂッツヅテデトドナニヌネノハバパヒビピフブプヘベペホボポマミムメモャヤュユョヨラリルレロヮワヰヱヲンヴヵヶヽヾ"
+    #     hiragana_chart = "ぁあぃいぅうぇえぉおかがきぎくぐけげこごさざしじすずせぜそぞただちぢっつづてでとどなにぬねのはばぱひびぴふぶぷへべぺほぼぽまみむめもゃやゅゆょよらりるれろゎわゐゑをんゔゕゖゝゞ"
+    #     # hir2kat = str.maketrans(hiragana_chart, katakana_chart)
+    #     kat2hir = str.maketrans(katakana_chart, hiragana_chart)
+    #     return text.translate(kat2hir)
+
 
     def create_new_card(self, morph):
         deck_id = mw.col.decks.id_for_name(self.target_deck)
@@ -580,44 +638,131 @@ class Ui_AddonWindow(QDialog):
         cilp_text = Pyperclip.paste()
         self.parser_text_2.setText(cilp_text)
 
-    def monitor_clipboard(self):
-        self.cb_monitor = clip_monitor()
-        self.cb_monitor.start()
-        self.cb_monitor.update_clipboard.connect(self.cb_mon_update_progress)
+    def find_words(self, query):
+        with open(self.accent_list_tsv, "r", encoding="utf-8") as f:
+            next(f)
+            reader = csv.reader(f, delimiter="\t")
+            words_list = []
+            for line in reader:
+                if line[0] == query:
+                    line[2] = re.sub("\(.\)", "", line[2])
+                    words_list.append(line)
+            return words_list
+
+    def search_pitch(self, entry_list):
+        return_final_results = []
+        for line in entry_list:
+            final_results = []
+            pitch_list = line[2].split(",")
+            if line[1]:
+                kana_list = list(line[1])
+            else:
+                kana_list = list(line[0])
+            pitch_result_list = []
+            for i, pitch in enumerate(pitch_list):
+                pitch_css_list = []
+                if pitch == "0":
+                    result = []
+                    result_string = ""
+                    for kana in kana_list:
+                        formated = f'<span class = "H">{kana}</span>'
+                        result.append(formated)
+                    result[0] = f'<span class = "LH">{kana_list[0]}</span>'
+                    result_string += "".join(result)
+                    pitch_css_list = result_string
+                elif pitch == "1":
+                    result = []
+                    result_string = ""
+                    for kana in kana_list:
+                        formated = f'<span class = "L">{kana}</span>'
+                        result.append(formated)
+                    result[0] = f'<span class = "HL">{kana_list[0]}</span>'
+                    result_string += "".join(result)
+                    pitch_css_list = result_string
+                elif pitch == "2":
+                    result = []
+                    result_string = ""
+                    for kana in kana_list:
+                        formated = f'<span class = "L">{kana}</span>'
+                        result.append(formated)
+                    result[0] = f'<span class = "LH">{kana_list[0]}</span>'
+                    result[1] = f'<span class = "HL">{kana_list[1]}</span>'
+                    result_string += "".join(result)
+                    pitch_css_list = result_string
+                elif pitch == "3":
+                    result = []
+                    result_string = ""
+                    for kana in kana_list:
+                        formated = f'<span class = "L">{kana}</span>'
+                        result.append(formated)
+                    result[0] = f'<span class = "LH">{kana_list[0]}</span>'
+                    result[1] = f'<span class = "H">{kana_list[1]}</span>'
+                    result[2] = f'<span class = "HL">{kana_list[2]}</span>'
+                    result_string += "".join(result)
+                    pitch_css_list = result_string
+                elif pitch == "4":
+                    result = []
+                    result_string = ""
+                    for kana in kana_list:
+                        formated = f'<span class = "L">{kana}</span>'
+                        result.append(formated)
+                    result[0] = f'<span class = "LH">{kana_list[0]}</span>'
+                    result[1] = f'<span class = "H">{kana_list[1]}</span>'
+                    result[2] = f'<span class = "H">{kana_list[2]}</span>'
+                    result[3] = f'<span class = "HL">{kana_list[3]}</span>'
+                    result_string += "".join(result)
+                    pitch_css_list = result_string
+                elif pitch == "5":
+                    result = []
+                    result_string = ""
+                    for kana in kana_list:
+                        formated = f'<span class = "L">{kana}</span>'
+                        result.append(formated)
+                    result[0] = f'<span class = "LH">{kana_list[0]}</span>'
+                    result[1] = f'<span class = "H">{kana_list[1]}</span>'
+                    result[2] = f'<span class = "H">{kana_list[2]}</span>'
+                    result[3] = f'<span class = "H">{kana_list[3]}</span>'
+                    result[4] = f'<span class = "HL">{kana_list[4]}</span>'
+                    result_string += "".join(result)
+                    pitch_css_list = result_string
+                elif pitch == "6":
+                    result = []
+                    result_string = ""
+                    for kana in kana_list:
+                        formated = f'<span class = "H">{kana}</span>'
+                        result.append(formated)
+                    result[0] = f'<span class = "LH">{kana_list[0]}</span>'
+                    result[5] = f'<span class = "HL">{kana_list[5]}</span>'
+                    result_string += "".join(result)
+                    pitch_css_list = result_string
+                pitch_result_list.append(pitch_css_list)
+            final_results.append(line[0])
+            final_results.append(line[1])
+            final_results.append(pitch_list)
+            final_results.append(pitch_result_list)
+            return_final_results.append(final_results)
+        return return_final_results
 
 
-    def cb_mon_update_progress(self, val):
-        self.plainTextEdit.appendPlainText(f"{val}")
+    def query_rtk_list(self, word):
+        word_list = list(word)
+        result = []
+        furigana_output = ""
+        for char in word_list:
+            res = self.search_rtk_kanji(char)
+            result.append(res)
+            furigana_output += f"<ruby><rb>{char}<rt>{res}</ruby> "
+        return furigana_output
 
-    def on_check_cb_funtion_toggled(self):
-        if self.parser_chkbtn_2.isChecked():
-            self.cb_monitor = clip_monitor()
-            self.cb_monitor.start()
-            self.cb_monitor.finished.connect(self.evt_mon_finished)
-            self.cb_monitor.update_clipboard.connect(self.cb_mon_update_progress)
-        else:
-
-            self.cb_monitor.mon_stop()
-
-    def evt_mon_finished(self):
-        showInfo("Finished")
-
-
-class clip_monitor(QThread):
-    continue_run = True
-    update_clipboard = pyqtSignal(str)
-
-    finished = pyqtSignal()
-
-    def run(self):
-        while self.continue_run:
-            new_text = Pyperclip.waitForNewPaste()
-            self.update_clipboard.emit(new_text)
-        self.finished.emit()
-
-    def mon_stop(self):
-        self.continue_run = False
-
+    def search_rtk_kanji(self, get_query):
+        with open(self.rtk_list_csv, "r", encoding="utf-8") as f:
+            next(f)
+            reader = csv.reader(f)
+            for line in reader:
+                if line[0] == get_query:
+                    return line[4].capitalize()
+            else:
+                return " "
 
 def window():
     mw.myWidget = AddonWindow = QtWidgets.QMainWindow()
