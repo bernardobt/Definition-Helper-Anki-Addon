@@ -12,6 +12,10 @@ target_jp_field = ''  (this is the field in which the addon will write the japan
 target_en_field = ''  (this is the field in which the addon will write the english definition into)
 
 target_deck = ""  (this is the name of the deck it will add the cards from the parser function)
+
+accent_list_tsv = "" (this is the location of the tsv list with pitch accent data. https://github.com/mifunetoshiro/kanjium/blob/master/data/source_files/raw/accents.txt )
+
+rtk_list_csv = "" (this is the location of the csv list with pitch accent data. https://github.com/sdcr/heisig-kanjis/blob/master/heisig-kanjis.csv )
     
 You can set them to fit your own cards. Remember to let the field name inside quotation makrs
 
@@ -30,13 +34,13 @@ The parse tab you will find an area to place a japanese text and click parse. It
 
 NOTE: For this parse function to work, you'll have to install the MeCab UniDic Japanese Dictionary (https://ankiweb.net/shared/info/13462835) addon. You can also follow https://www.reddit.com/r/LearnJapanese/comments/g8ngtm/how_did_you_guys_update_your_mecab_unidic/fovfet7/ to have a more updated version of it.
 
-NOTE 2: For the parse function I used some files from MorphMan Addon (https://ankiweb.net/shared/info/900801631) code (https://github.com/kaegi/MorphMan). Very useful addon, that I personally used for a long time.
+NOTE 2: For the parse function I used some files from MorphMan Addon (https://ankiweb.net/shared/info/900801631) code (https://github.com/kaegi/MorphMan). Very useful addon, that I personally use.
 
 The Clipboard tab you'll find a clipboard monitor, adds what you have on clip board in there. Currently it can't be deactivated, unfortunately.
 
 NOTE: Pyperclip (https://pypi.org/project/pyperclip/) was used to make the clipboard functions.
 
-In Results, you see three tabs in which the results for each dictionary will be ploted.
+In Results, you see 4 tabs in which the results for each dictionary will be ploted.
 
 NOTE: The Dictionary files are NOT provided, you'll have to set them manually. (As of 12/06/2020, added support to the JMEdict)
 
@@ -47,6 +51,10 @@ Inside that folder you'll need to create a new folder for each dictionary and pu
 Update each variable in __init__.py with the name of each dictionary. (ex. dict_1 = "大辞林", dict_2 = "広辞苑", dict_3 = "新明解", dict_4 = "jmdict_english")
 
 You should than be good to go.
+
+In the Utils tab, it will give you results for the current reviewing card, when you use the "Get" button. It will write Pitch accent, Reading and RTK Keywords to the respective fields, which have to be configure in the __init__.py. The variables are target_pitch_field = "Pitch Accent", target_rtk_field = "Focus RTK Keywords", target_readingfocus_field = "Reading Focus".
+
+NOTE: In current state, the utils tab buttons should only funtion properly if those fields exists in the card.
 
 When in anki, go to TOOLS, and there should be a new option "Definition Updater". Just click it and the window will open.
 
