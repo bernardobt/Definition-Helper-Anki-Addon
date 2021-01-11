@@ -39,19 +39,19 @@ class Ui_AddonWindow(QDialog):
     dict_2 = "広辞苑"
     dict_3 = "新明解"
     dict_4 = "jmdict_english"
-    
+
     # Dictionaries folder location
-    dict_folder_path = ""
+    dict_folder_path = "D:\\ジョゼ\\Stuff For My Addons to run\\Definition Helper\\Dictionaries\\"
     dict_path = [dict_folder_path + dict_1,
                  dict_folder_path + dict_2,
                  dict_folder_path + dict_3,
                  dict_folder_path + dict_4]
 
     # Pitch accent data location
-    accent_list_tsv = ""
+    accent_list_tsv = "D:\\ジョゼ\\Stuff For My Addons to run\\Pitch Accent\\accents.tsv"
 
     # RTK Keyword list
-    rtk_list_csv = ""
+    rtk_list_csv = "D:\\ジョゼ\\Stuff For My Addons to run\\RTK Keyword\\heisig-kanjis.csv"
 
 
     def setupUi(self, AddonWindow):
@@ -551,11 +551,11 @@ class Ui_AddonWindow(QDialog):
         mw.requireReset(reason=ResetReason.EditCurrentInit, context=self)
         mw.delayedMaybeReset()
 
-    def update_utils_gui(self, nid, reading, pitch, keywords, target_reading, target_pitch, target_keywords):
+    def update_utils_gui(self, nid, reading, pitch, keywords, target_reading, target_pitch, target_keywords, pitch_number):
         note = mw.col.getNote(nid)
         if self.curr_disp_overwrite.isChecked():
             note[target_reading] = reading
-            note[target_pitch] = pitch
+            note[target_pitch] = f"{pitch} ({pitch_number})"
             note[target_keywords] = keywords
             note.flush()
         mw.requireReset(reason=ResetReason.EditCurrentInit, context=self)
@@ -601,18 +601,19 @@ class Ui_AddonWindow(QDialog):
         for result in pitch_res:
             keywords_res = self.query_rtk_list(note[self.focus_field])
             pitch_string = "・".join(result[3])
+            pitch_number_string = "・".join(result[2])
             self.parse_res_button = QtWidgets.QPushButton(which_scroll)
             self.parse_res_button.setObjectName("pushButton")
             self.parse_res_button.setFont(QFont(results_font, font_size))
             self.parse_res_button.setText(f"{result[0]}\n"
                                           f"Reading: {result[1]}\n"
-                                          f"Pitch Accent: {result[2]}")
+                                          f"Pitch Accent: {pitch_number_string}")
 
             which_layout.addWidget(self.parse_res_button)
             self.parse_res_button.clicked.connect(
                 lambda ch, result=result, pitch_string=pitch_string : self.update_utils_gui(note_id, result[1], pitch_string,
                                                                     keywords_res, self.target_readingfocus_field,
-                                                                    self.target_pitch_field, self.target_rtk_field))
+                                                                    self.target_pitch_field, self.target_rtk_field, pitch_number_string))
 
 
     # # thanks to http://olsgaard.dk/hiragana-katakana-transliteration-in-4-lines-of-python.html
@@ -654,10 +655,22 @@ class Ui_AddonWindow(QDialog):
         for line in entry_list:
             final_results = []
             pitch_list = line[2].split(",")
+            small_table = ['ぁ', 'ぃ', 'ぅ', 'ぇ', 'ぉ',
+                           'ゃ', 'ゅ', 'ょ',
+                           'ァ', 'ィ', 'ゥ', 'ェ', 'ォ',
+                           'ャ', 'ュ', 'ョ']
             if line[1]:
                 kana_list = list(line[1])
+                for i, char in enumerate(kana_list):
+                    if char in small_table:
+                        kana_list[i - 1] += char
+                        del kana_list[i]
             else:
                 kana_list = list(line[0])
+                for i, char in enumerate(kana_list):
+                    if char in small_table:
+                        kana_list[i - 1] += char
+                        del kana_list[i]
             pitch_result_list = []
             for i, pitch in enumerate(pitch_list):
                 pitch_css_list = []
