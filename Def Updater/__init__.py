@@ -66,6 +66,9 @@ class def_helper_2(QMainWindow):
         # Get Note Button Config
         self.ui.pushButton_rtk_keywords.clicked.connect(self.rtk_keywords)
 
+        # Get Note Button Config
+        self.ui.pushButton_custom_pa_reading.clicked.connect(self.custom_pitch)
+
     def check_get_note_push_button(self):
         if self.ui.radioButton_Current.isChecked():
             self.get_current_gui(self.dictionaries_list)
@@ -309,6 +312,36 @@ class def_helper_2(QMainWindow):
             note.flush()
         mw.requireReset(reason=ResetReason.EditCurrentInit, context=self)
         mw.delayedMaybeReset()
+
+    def custom_pitch(self):
+        rev = mw.reviewer.card
+        try:
+            noteid = rev.nid
+        except:
+            showInfo("You must open the reviewer")
+            return
+        try:
+            note = mw.col.getNote(noteid)
+        except:
+            showInfo("Couldn't find Note Info")
+            return
+        if note[self.focus_field]:
+            if self.ui.lineEdit_custom_reading.text() and self.ui.lineEdit_custom_pitch.text():
+                word_list = [[note[self.focus_field], self.ui.lineEdit_custom_reading.text(), self.ui.lineEdit_custom_pitch.text()]]
+                custom_pa = self.search_pitch(word_list)
+                note[self.target_pitch_field] = ""
+                if custom_pa != "":
+                    for result in custom_pa:
+                        pitch_string = "・".join(result[3])
+                        pitch_number_string = "・".join(result[2])
+                        note[self.target_pitch_field] += f"{pitch_string} ({pitch_number_string}) "
+                note.flush()
+                mw.requireReset(reason=ResetReason.EditCurrentInit, context=self)
+                mw.delayedMaybeReset()
+            else:
+                showInfo(f"Both custom Reading And Pitch Accent fields must be filled")
+        else:
+            showInfo(f"Nothing in the {self.focus_field} field")
 
     def rtk_keywords(self):
         rev = mw.reviewer.card
