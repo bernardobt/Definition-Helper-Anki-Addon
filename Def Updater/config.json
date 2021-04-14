@@ -1,0 +1,17 @@
+{
+	"focus_field" : "Focus",
+    "target_jp_field" : "Def Jp",
+    "target_en_field" : "Def En",
+    "target_deck" : "6 - Mining deck",
+    "target_pitch_field" : "Pitch Accent",
+    "target_rtk_field" : "Focus RTK Keywords",
+    "target_readingfocus_field" : "Reading Focus",
+    "parts_of_speech_field" : "PoS-Tags",
+    "dict_1" : "大辞林",
+    "dict_2" : "広辞苑",
+    "dict_3" : "新明解",
+    "dict_4" : "jmdict_english",
+    "dict_folder_path" : "",
+    "accent_list_tsv" : "\\accents.tsv",
+    "rtk_list_csv" : "\\heisig-kanjis.csv"
+}
